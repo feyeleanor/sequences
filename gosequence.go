@@ -72,3 +72,25 @@ func Until(container, f interface{}) (count int) {
 	}
 	return
 }
+
+
+type Reducible interface {
+	Reduce(seed, function interface{}) (r interface{}, ok bool)
+}
+
+func Reduce(container, seed interface{}, f interface{}) (r interface{}, ok bool) {
+	switch c := container.(type) {
+	case Reducible:				r, ok = c.Reduce(seed, f)
+	case Indexable:				r, ok = reduceIndexable(c, seed, f)
+	case Mappable:				r, ok = reduceMappable(c, seed, f)
+	case Iterable:				r, ok = reduceIterable(c, seed, f)
+	default:					switch c := reflect.ValueOf(container); c.Kind() {
+								case reflect.Invalid:	r, ok = seed, false
+								case reflect.Slice:		r, ok = reduceSlice(c, seed, f)
+								case reflect.Map:		r, ok = reduceMap(c, seed, f)
+								case reflect.Chan:		r, ok = reduceChan(c, seed, f)
+								case reflect.Func:		r, ok = reduceFunction(c, seed, f)
+								}
+	}
+	return
+}
