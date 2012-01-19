@@ -42,6 +42,13 @@ func Cycle(container interface{}, count int, f func(interface{})) (i int, ok boo
 	return
 }
 
+func Count(container interface{}, f func(interface{}) bool) (n int) {
+	Each(container, func(x interface{}) {
+		if f(x) { n++ }
+	})
+	return
+}
+
 
 type PartiallyIterable interface {
 	While(condition bool, function interface{}) (count int)
