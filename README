@@ -1,0 +1,13 @@
+An S-Expression library written in Go.
+
+S-Expressions can be modelled using a variety of structures. This package provides three implementations:
+
+Slice uses an []interface{} as its backing store but is accessed via list semantics. As such it is suited to tasks
+where breadth-first search and speed of element access are priorities;
+
+All three S-Expression data structures store interface{} objects and as such can be used to store each other in
+arbitrary numbers and to arbitrary depths.
+
+An additional SliceValue type is provides which uses a reflect.Value containing a slice as its backing store. This
+is not guaranteed to be usable as an S-Expression but provides a convenient way to reuse many of the functions
+specified for S-Expressions on slices of any type.
