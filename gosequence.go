@@ -34,11 +34,12 @@ func Each(container, f interface{}) (ok bool) {
 }
 
 func Cycle(container interface{}, count int, f func(interface{})) (i int, ok bool) {
-	if count == 0 {
-		for ok = true; ok; i++ { ok = Each(container, f) }
-	} else {
-		for ok = true; i < count && ok; i++ { ok = Each(container, f) }
-	}
+	for ok = true; i < count && ok; i++ { ok = Each(container, f) }
+	return
+}
+
+func CycleForever(container interface{}, count int, f func(interface{})) (i int, ok bool) {
+	for ok = true; ok; i++ { ok = Each(container, f) }
 	return
 }
 

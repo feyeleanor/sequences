@@ -401,55 +401,22 @@ func TestEachFunction(t *testing.T) {
 	})
 }
 
-func TestCycleIterable(t *testing.T) {
-	ConfirmCycle := func(s iterable_slice, c int) {
-		iterations := 0
-		Cycle(s, c, func(i interface{}) {
-			iterations++
-		})
-		if expected := c * len(s); iterations != expected {
-			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
+func TestCycle(t *testing.T) {
+	ConfirmCycle := func(s interface{}, l int) {
+		for c := 1; c < 5; c++ {
+			iterations := 0
+			expected := c * l
+			switch cycles, ok := Cycle(s, c, func(i interface{}) { iterations++ }); {
+			case !ok:						t.Fatalf("cycle([%T], %v): iteration failed to complete", s, c)
+			case cycles != c:				t.Fatalf("cycle([%T], %v): cycle count should be %v but is %v", s, c, c, cycles)
+			case iterations != expected:	t.Fatalf("cycle([%T], %v): iteration count should be %v but is %v", s, c, expected, iterations)
+			}
 		}
 	}
 
-	S := iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmCycle(S, 1)
-	ConfirmCycle(S, 2)
-	ConfirmCycle(S, 3)
-}
-
-func TestCycleIndexable(t *testing.T) {
-	ConfirmCycle := func(s indexable_slice, c int) {
-		iterations := 0
-		Cycle(s, c, func(i interface{}) {
-			iterations++
-		})
-		if expected := c * len(s); iterations != expected {
-			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
-		}
-	}
-
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmCycle(S, 1)
-	ConfirmCycle(S, 2)
-	ConfirmCycle(S, 3)
-}
-
-func TestCycleSlice(t *testing.T) {
-	ConfirmCycle := func(s []int, c int) {
-		iterations := 0
-		Cycle(s, c, func(i interface{}) {
-			iterations++
-		})
-		if expected := c * len(s); iterations != expected {
-			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
-		}
-	}
-
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmCycle(S, 1)
-	ConfirmCycle(S, 2)
-	ConfirmCycle(S, 3)
+	ConfirmCycle(iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
+	ConfirmCycle(indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
+	ConfirmCycle([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
 }
 
 func TestCount(t *testing.T) {
