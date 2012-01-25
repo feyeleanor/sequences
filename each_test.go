@@ -1,7 +1,7 @@
 package gosequence
 
 import(
-	"reflect"
+	R "reflect"
 	"strconv"
 	"testing"
 )
@@ -67,7 +67,6 @@ func TestEachIterable(t *testing.T) {
 
 func TestEachIndexable(t *testing.T) {
 	var count	int
-	var S		Indexable
 
 	ConfirmEach := func(s Indexable, f interface{}) {
 		count = 0
@@ -77,102 +76,215 @@ func TestEachIndexable(t *testing.T) {
 		}
 	}
 
-	S = indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmEach(S, func(i interface{}) {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-	})
-
-	ConfirmEach(S, func(i int, v interface{}) {
+	ConfirmVariadicEach := func(s Indexable, f interface{}) {
+		count = 0
 		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != 1:		t.Fatalf("total iterations should be 1 but are %v", count)
 		}
-		count++
-	})
+	}
 
-	ConfirmEach(S, func(k, v interface{}) {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
-
-	ConfirmEach(S, func(i interface{}) {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-	})
-
-	ConfirmEach(S, func(i int, v interface{}) {
-		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
-
-	ConfirmEach(S, func(k, v interface{}) {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
-
-	S = indexable_function(
-		func(i int) interface{} {
-			return i
+	ConfirmEachIndexable := func(s Indexable) {
+		ConfirmEach(s, func(v interface{}) {
+			if v != s.At(count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
 		})
-	ConfirmEach(S, func(i interface{}) {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-	})
 
-	ConfirmEach(S, func(i int, v interface{}) {
+		ConfirmEach(s, func(i int, v interface{}) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != s.At(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v interface{}) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v != s.At(count):				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...interface{}) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != s.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v R.Value) {
+			if v.Interface() != s.At(count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v R.Value) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != s.At(i):		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k interface{}, v R.Value) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s.At(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v R.Value) {
+			switch {
+			case k.Interface() != count:		t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s.At(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...R.Value) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != s.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...int) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != s.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int) {
+			if v != s.At(count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i, v int) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != s.At(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}
+
+	ConfirmEachIndexable(indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+	ConfirmEachIndexable(indexable_function(func(i int) interface{} { return i }))
+}
+
+func TestEachMappable(t *testing.T) {
+	var count	int
+
+	ConfirmEach := func(m Mappable, f interface{}) {
+		count = 0
 		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		case !Each(m, f):		t.Fatalf("failed to perform iteration %v over %v", f, m)
+		case count != m.Len():	t.Fatalf("total iterations should be %v but are %v", m.Len(), count)
 		}
-		count++
-	})
+	}
 
-	ConfirmEach(S, func(k, v interface{}) {
+	ConfirmVariadicEach := func(m Mappable, f interface{}) {
+		count = 0
 		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		case !Each(m, f):		t.Fatalf("failed to perform iteration %v over %v", f, m)
+		case count != 1:		t.Fatalf("total iterations should be 1 but are %v", count)
 		}
-		count++
-	})
+	}
 
-	ConfirmEach(S, func(i interface{}) {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-	})
+	ConfirmEachMappable := func(m Mappable) {
+		ConfirmEach(m, func(v interface{}) {
+			count++
+		})
 
-	ConfirmEach(S, func(i int, v interface{}) {
-		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+		ConfirmEach(m, func(i int, v interface{}) {
+			if v != m.Lookup(i) {
+				t.Fatalf("element %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
 
-	ConfirmEach(S, func(k, v interface{}) {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+		ConfirmEach(m, func(k, v interface{}) {
+			if v != m.Lookup(k) {
+				t.Fatalf("element %v erroneously reported as %v", k, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(m, func(v ...interface{}) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != m.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", m, v)
+			}
+			count++
+		})
+
+		ConfirmEach(m, func(v R.Value) {
+			count++
+		})
+
+		ConfirmEach(m, func(i int, v R.Value) {
+			if v.Interface() != m.Lookup(i) {
+				t.Fatalf("element %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
+
+		ConfirmEach(m, func(k interface{}, v R.Value) {
+			if v.Interface() != m.Lookup(k) {
+				t.Fatalf("element %v erroneously reported as %v", k, v)
+			}
+			count++
+		})
+
+		ConfirmEach(m, func(k, v R.Value) {
+			if v.Interface() != m.Lookup(k.Interface()) {
+				t.Fatalf("element %v erroneously reported as %v", k.Interface(), v.Interface())
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(m, func(v ...R.Value) {
+			switch {
+			case count == 1:					t.Fatalf("variadic function erroneously called more than once")
+			case len(v) != m.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", m, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(m, func(v ...int) {
+			switch {
+			case count == 1:					t.Fatalf("variadic function erroneously called more than once")
+			case len(v) != m.Len():				t.Fatalf("variadic slice %v erroneously passed as %v", m, v)
+			}
+			count++
+		})
+
+		ConfirmEach(m, func(v int) {
+			count++
+		})
+
+		ConfirmEach(m, func(i, v int) {
+			if v != m.Lookup(i) {
+				t.Fatalf("element %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
+	}
+
+	ConfirmEachMappable(mappable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+	ConfirmEachMappable(mappable_function(func(i int) interface{} { return i }))
+	ConfirmEachMappable(mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9})
 }
 
 func TestEachSlice(t *testing.T) {
@@ -181,50 +293,116 @@ func TestEachSlice(t *testing.T) {
 	ConfirmEach := func(s []int, f interface{}) {
 		count = 0
 		switch {
-		case !Each(s, f):			t.Fatalf("failed to perform iteration %v over %v", f, s)
-		case count != len(s):		t.Fatalf("total iterations should be %v but is %v", len(s), count)
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):	t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
-	I := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmEach(I, func(i interface{}) {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-	})
-
-	ConfirmEach(I, func(i int, v interface{}) {
+	ConfirmVariadicEach := func(s []int, f interface{}) {
+		count = 0
 		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != 1:		t.Fatalf("total iterations should be 1 but are %v", count)
 		}
-		count++
-	})
+	}
 
-	ConfirmEach(I, func(k, v interface{}) {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
 
-	ConfirmEach(I, func(i int, v int) {
-		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+	ConfirmEachSlice := func(s []int) {
+		ConfirmEach(s, func(v interface{}) {
+			if v != s[count] {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
 
-	ConfirmEach(I, func(k, v int) {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+		ConfirmEach(s, func(i int, v interface{}) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != s[i]:						t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v interface{}) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v != s[count]:					t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...interface{}) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v R.Value) {
+			if v.Interface() != s[count] {
+				t.Fatalf("element %v erroneously reported as %v", count, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v R.Value) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != s[i]:			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k interface{}, v R.Value) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s[count]:		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v R.Value) {
+			switch {
+			case k.Interface() != count:		t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s[count]:		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...R.Value) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...int) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int) {
+			if v != s[count] {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i, v int) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != s[i]:						t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}
+
+	ConfirmEachSlice([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
 }
 
 func TestEachMap(t *testing.T) {
@@ -399,51 +577,4 @@ func TestEachFunction(t *testing.T) {
 			t.Fatalf("index %v erroneously reported as %v", i, v)
 		}
 	})
-}
-
-func TestCycle(t *testing.T) {
-	ConfirmCycle := func(s interface{}, l int) {
-		for c := 1; c < 5; c++ {
-			iterations := 0
-			expected := c * l
-			switch cycles, ok := Cycle(s, c, func(i interface{}) { iterations++ }); {
-			case !ok:						t.Fatalf("cycle([%T], %v): iteration failed to complete", s, c)
-			case cycles != c:				t.Fatalf("cycle([%T], %v): cycle count should be %v but is %v", s, c, c, cycles)
-			case iterations != expected:	t.Fatalf("cycle([%T], %v): iteration count should be %v but is %v", s, c, expected, iterations)
-			}
-		}
-	}
-
-	ConfirmCycle(iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
-	ConfirmCycle(indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
-	ConfirmCycle([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 10)
-}
-
-func TestCount(t *testing.T) {
-	ConfirmCount := func(o, r interface{}, f func(interface{}) bool) {
-		if x := Count(o, f); !reflect.DeepEqual(r, x) {
-			t.Fatalf("Count(%v, f) should be %v but is %v", o, r, x)
-		}
-	}
-
-	IsPositive := func(i interface{}) bool {
-		if i, ok := i.(int); ok {
-			return i > 0
-		}
-		return false
-	}
-
-	ConfirmCount([]int{}, 0, IsPositive)
-	ConfirmCount([]interface{}{}, 0, IsPositive)
-
-	ConfirmCount([]int{0}, 0, IsPositive)
-	ConfirmCount([]int{1}, 1, IsPositive)
-	ConfirmCount([]interface{}{"test"}, 0, IsPositive)
-	ConfirmCount([]interface{}{1}, 1, IsPositive)
-
-
-	ConfirmCount([]int{0, 1}, 1, IsPositive)
-	ConfirmCount([]int{1, 2}, 2, IsPositive)
-	ConfirmCount([]interface{}{"test", 1}, 1, IsPositive)
-	ConfirmCount([]interface{}{1, 2}, 2, IsPositive)
 }

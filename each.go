@@ -90,44 +90,55 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 
 func eachMappable(container Mappable, f interface{}) (ok bool) {
 	switch f := f.(type) {
-	case func(interface{}):					for _, v := range container.Keys() {
-												f(container.At(v))
-											}
+	case func(interface{}):					Each(container.Keys(), func(v interface{}) {
+												f(container.Lookup(v))
+												
+											})
 											ok = true
 
-	case func(interface{}, interface{}):	for _, v := range container.Keys() {
-												f(v, container.At(v))
-											}
+	case func(int, interface{}):			Each(container.Keys(), func(v interface{}) {
+												f(v.(int), container.Lookup(v))
+											})
 											ok = true
 
-	case func(...interface{}):				keys := container.Keys()
-											p := make([]interface{}, len(keys), len(keys))
-											for i, v := range keys {
-												p[i] = container.At(v)
-											}
+	case func(interface{}, interface{}):	Each(container.Keys(), func(v interface{}) {
+												f(v, container.Lookup(v))
+											})
+											ok = true
+
+	case func(...interface{}):				l := container.Len()
+											p := make([]interface{}, l, l)
+											Each(container.Keys(), func(i int, v interface{}) {
+												p[i] = container.Lookup(v)
+											})
 											f(p...)
 											ok = true
 
-	case func(R.Value):						for _, v := range container.Keys() {
-												f(R.ValueOf(container.At(v)))
-											}
+	case func(R.Value):						Each(container.Keys(), func(v interface{}) {
+												f(R.ValueOf(container.Lookup(v)))
+											})
 											ok = true
 
-	case func(interface{}, R.Value):		for _, v := range container.Keys() {
-												f(v, R.ValueOf(container.At(v)))
-											}
+	case func(int, R.Value):				Each(container.Keys(), func(v interface{}) {
+												f(v.(int), R.ValueOf(container.Lookup(v)))
+											})
 											ok = true
 
-	case func(R.Value, R.Value):			for _, v := range container.Keys() {
-												f(R.ValueOf(v), R.ValueOf(container.At(v)))
-											}
+	case func(interface{}, R.Value):		Each(container.Keys(), func(v interface{}) {
+												f(v, R.ValueOf(container.Lookup(v)))
+											})
 											ok = true
 
-	case func(...R.Value):					keys := container.Keys()
-											p := make([]R.Value, len(keys), len(keys))
-											for i, v := range keys {
-												p[i] = R.ValueOf(container.At(v))
-											}
+	case func(R.Value, R.Value):			Each(container.Keys(), func(v interface{}) {
+												f(R.ValueOf(v), R.ValueOf(container.Lookup(v)))
+											})
+											ok = true
+
+	case func(...R.Value):					l := container.Len()
+											p := make([]R.Value, l, l)
+											Each(container.Keys(), func(i int, v interface{}) {
+												p[i] = R.ValueOf(container.Lookup(v))
+											})
 											f(p...)
 											ok = true
 
@@ -136,27 +147,27 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 													// f(...v)
 													l := container.Len()
 													p := make([]R.Value, l, l)
-													for i, v := range container.Keys() {
-														p[i] = R.ValueOf(container.At(v))
-													}
+													Each(container.Keys(), func(i int, v interface{}) {
+														p[i] = R.ValueOf(container.Lookup(v))
+													})
 													f.Call(p)
 													ok = true
 												} else {
 													switch t.NumIn() {
 													case 1:				//	f(v)
 																		p := make([]R.Value, 1, 1)
-																		for _, v := range container.Keys() {
-																			p[0] = R.ValueOf(container.At(v))
-																			f.Call(p)
-																		}
+																		Each(container.Keys(), func(v interface{}) {
+																			p[0] = R.ValueOf(container.Lookup(v))
+																			f.Call(p)																			
+																		})
 																		ok = true
 
 													case 2:				// f(i, v)
 																		p := make([]R.Value, 2, 2)
-																		for _, v := range container.Keys() {
-																			p[0], p[1] = R.ValueOf(v), R.ValueOf(container.At(v))
+																		Each(container.Keys(), func(v interface{}) {
+																			p[0], p[1] = R.ValueOf(v), R.ValueOf(container.Lookup(v))
 																			f.Call(p)
-																		}
+																		})
 																		ok = true
 													}
 												}
@@ -378,6 +389,13 @@ func eachChannel(c R.Value, f interface{}) (ok bool) {
 											}
 											ok = true
 
+	case func(R.Value, R.Value):			i := 0
+											for v, open := c.Recv(); open; i++ {
+												f(R.ValueOf(i), v)
+												v, open = c.Recv()
+											}
+											ok = true
+
 	case func(...R.Value):					p := make([]R.Value, 0, 4)
 											for v, open := c.Recv(); open; {
 												p = append(p, v)
@@ -418,89 +436,6 @@ func eachChannel(c R.Value, f interface{}) (ok bool) {
 													}
 												}
 											}
-	}
-	return
-}
-
-func eachGenericFunction(g, f R.Value) (ok bool) {
-	switch tg := g.Type(); tg.NumIn() {
-	case 0:			if f := R.ValueOf(f); f.Kind() == R.Func {
-						if tf := f.Type(); tf.IsVariadic() {
-							//	f(...v)
-							i := 0
-							pg := []R.Value{}		
-							pf := make([]R.Value, 0, 4)
-							for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
-								pf = append(pf, v[0])
-								i++
-							}
-							f.Call(pf)
-							ok = true
-						} else {
-							switch tf.NumIn() {
-							case 1:		//	f(v)
-										pg := []R.Value{}
-										pf := make([]R.Value, 1, 1)
-										for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
-											pf[0] = v[0]
-											f.Call(pf)
-										}
-										ok = true
-
-							case 2:		//	f(i, v)
-										i := 0
-										pg := []R.Value{}
-										pf := make([]R.Value, 2, 2)
-										for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
-											pf[0], pf[1] = R.ValueOf(i), v[0]
-											f.Call(pf)
-											i++
-										}
-										ok = true
-							}
-						}
-					}
-
-	case 1:			if f := R.ValueOf(f); f.Kind() == R.Func {
-						if tf := f.Type(); tf.IsVariadic() {
-							//	f(...v)
-							i := 0
-							pg := []R.Value{ R.ValueOf(0) }
-							pf := make([]R.Value, 0, 4)
-							for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
-								pf = append(pf, v[0])
-								i++
-								pg[0] = R.ValueOf(i)
-							}
-							f.Call(pf)
-							ok = true
-						} else {
-							switch tf.NumIn() {
-							case 1:		//	f(v)
-										i := 0
-										p := []R.Value{ R.ValueOf(0) }
-										for v := g.Call(p); !v[1].Bool(); v = g.Call(p) {
-											p[0] = v[0]
-											f.Call(p)
-											i++
-											p[0] = R.ValueOf(i)
-										}
-										ok = true
-
-							case 2:		//	f(i, v)
-										i := 0
-										pg := []R.Value{ R.ValueOf(0) }
-										pf := make([]R.Value, 2, 2)
-										for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
-											pf[0], pf[1] = pg[0], v[0]
-											f.Call(pf)
-											i++
-											pg[0] = R.ValueOf(i)
-										}
-										ok = true
-							}
-						}
-					}			
 	}
 	return
 }
@@ -557,6 +492,13 @@ func eachFunction(g R.Value, f interface{}) (ok bool) {
 																}
 																ok = true
 
+						case func(R.Value, R.Value):			p := []R.Value{}
+																for i, v := 0, g.Call(p); !v[1].Bool(); v = g.Call(p) {
+																	f(R.ValueOf(i), v[0])
+																	i++
+																}
+																ok = true
+
 						case func(...R.Value):					pg := []R.Value{}
 																pf := make([]R.Value, 0, 4)
 																for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
@@ -565,7 +507,42 @@ func eachFunction(g R.Value, f interface{}) (ok bool) {
 																f(pf...)
 																ok = true
 
-						default:								eachGenericFunction(g, R.ValueOf(f))
+						default:								if f := R.ValueOf(f); f.Kind() == R.Func {
+																	if tf := f.Type(); tf.IsVariadic() {
+																		//	f(...v)
+																		i := 0
+																		pg := []R.Value{}
+																		pf := make([]R.Value, 0, 4)
+																		for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
+																			pf = append(pf, v[0])
+																			i++
+																		}
+																		f.Call(pf)
+																		ok = true
+																	} else {
+																		switch tf.NumIn() {
+																		case 1:		//	f(v)
+																					pg := []R.Value{}
+																					pf := make([]R.Value, 1, 1)
+																					for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
+																						pf[0] = v[0]
+																						f.Call(pf)
+																					}
+																					ok = true
+
+																		case 2:		//	f(i, v)
+																					i := 0
+																					pg := []R.Value{}
+																					pf := make([]R.Value, 2, 2)
+																					for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
+																						pf[0], pf[1] = R.ValueOf(i), v[0]
+																						f.Call(pf)
+																						i++
+																					}
+																					ok = true
+																		}
+																	}
+																}
 						}
 
 		case 1:			switch f := f.(type) {
@@ -634,6 +611,16 @@ func eachFunction(g R.Value, f interface{}) (ok bool) {
 																}
 																ok = true
 
+
+						case func(R.Value, R.Value):			i := 0
+																p := []R.Value{ R.ValueOf(i) }
+																for v := g.Call(p); !v[0].IsNil(); v = g.Call(p) {
+																	f(p[0], v[0])
+																	i++
+																	p[0] = R.ValueOf(i)
+																}
+																ok = true
+
 						case func(...R.Value):					i := 0
 																pg := []R.Value{ R.ValueOf(i) }
 																pf := make([]R.Value, 0, 4)
@@ -645,7 +632,46 @@ func eachFunction(g R.Value, f interface{}) (ok bool) {
 																f(pf...)
 																ok = true
 
-						default:								eachGenericFunction(g, R.ValueOf(f))
+						default:								if f := R.ValueOf(f); f.Kind() == R.Func {
+																	if tf := f.Type(); tf.IsVariadic() {
+																		//	f(...v)
+																		i := 0
+																		pg := []R.Value{ R.ValueOf(0) }
+																		pf := make([]R.Value, 0, 4)
+																		for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
+																			pf = append(pf, v[0])
+																			i++
+																			pg[0] = R.ValueOf(i)
+																		}
+																		f.Call(pf)
+																		ok = true
+																	} else {
+																		switch tf.NumIn() {
+																		case 1:		//	f(v)
+																					i := 0
+																					p := []R.Value{ R.ValueOf(0) }
+																					for v := g.Call(p); !v[1].Bool(); v = g.Call(p) {
+																						p[0] = v[0]
+																						f.Call(p)
+																						i++
+																						p[0] = R.ValueOf(i)
+																					}
+																					ok = true
+
+																		case 2:		//	f(i, v)
+																					i := 0
+																					pg := []R.Value{ R.ValueOf(0) }
+																					pf := make([]R.Value, 2, 2)
+																					for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
+																						pf[0], pf[1] = pg[0], v[0]
+																						f.Call(pf)
+																						i++
+																						pg[0] = R.ValueOf(i)
+																					}
+																					ok = true
+																		}
+																	}
+																}
 						}
 		}
 	}

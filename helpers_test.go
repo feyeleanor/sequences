@@ -1,26 +1,5 @@
 package gosequence
 
-type indexable_slice	[]interface{}
-
-func (i indexable_slice) Len() int {
-	return len(i)
-}
-
-func (i indexable_slice) At(x int) interface{} {
-	return i[x]
-}
-
-
-type indexable_function	func(i int) interface{}
-func (f indexable_function) Len() int {
-	return 10
-}
-
-func (f indexable_function) At(x int) interface{} {
-	return f(x)
-}
-
-
 type iterable_slice []interface{}
 
 func (s iterable_slice) Each(f interface{}) (ok bool) {
@@ -65,4 +44,84 @@ func (s partially_iterable_slice) While(r bool, f interface{}) (count int) {
 		}
 	}
 	return
+}
+
+type indexable_slice []interface{}
+
+func (i indexable_slice) Len() int {
+	return len(i)
+}
+
+func (i indexable_slice) At(x int) interface{} {
+	return i[x]
+}
+
+
+type indexable_function func(i int) interface{}
+
+func (f indexable_function) Len() int {
+	return 10
+}
+
+func (f indexable_function) At(x int) interface{} {
+	return f(x)
+}
+
+
+type mappable_slice []int
+
+func (m mappable_slice) Len() int {
+	return len(m)
+}
+
+func (m mappable_slice) Lookup(key interface{}) interface{} {
+	return m[key.(int)]
+}
+
+func (m mappable_slice) Keys() interface{} {
+	r := make(iterable_slice, len(m), len(m))
+	for i := len(m) - 1; i > -1; i-- {
+		r[i] = i
+	}
+	return r
+}
+
+
+type mappable_map map[int]int
+
+func (m mappable_map) Len() int {
+	return len(m)
+}
+
+func (m mappable_map) Lookup(key interface{}) interface{} {
+	return m[key.(int)]
+}
+
+func (m mappable_map) Keys() interface{} {
+	r := make(iterable_slice, len(m), len(m))
+	i := 0
+	for k, _ := range m {
+		r[i] = k
+		i++
+	}
+	return r
+}
+
+
+type mappable_function func(i int) interface{}
+
+func (f mappable_function) Len() int {
+	return 10
+}
+
+func (f mappable_function) Lookup(x interface{}) interface{} {
+	return f(x.(int))
+}
+
+func (m mappable_function) Keys() interface{} {
+	r := make(iterable_slice, m.Len(), m.Len())
+	for i := m.Len() - 1; i > -1; i-- {
+		r[i] = i
+	}
+	return r
 }

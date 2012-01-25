@@ -9,8 +9,8 @@ type Indexable interface {
 
 type Mappable interface {
 	Len() int
-	At(key interface{}) interface{}
-	Keys() []interface{}
+	Lookup(key interface{}) interface{}
+	Keys() interface{}
 }
 
 
