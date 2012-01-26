@@ -1,4 +1,32 @@
-A Go library for iteration and manipulation of collection types.
+== About ==
 
-Where possible known interfaces are used to reduce processing overhead, but the fallback case of type-generic collection
-manipulation is also handled where it seems possible.
+Sequences is a Go library for generalised iteration and manipulation of collection types.
+
+Go is a powerful and friendly compiled language which uses type inference and a clean syntax to minimise
+programmer annoyance. Whilst it is considerably more productive than more established languages such as
+C++ it still falls behind the best-of-breed interpreted languages such as Ruby or Python, in large part
+due to the lack of a flexible vocabulary for handling higher-level collection types.
+
+Sequences seeks to address this shortcoming by providing a small but expressive set of additional words
+to a developer's toolbox for handling common activities such as iteration. These encourage code reuse
+during the prototyping phase of any project whilst at the same time supporting the full customisation
+of individual runtime types where this is desirable.
+
+Sequences will not solve your critical performance bottlenecks. Indeed relying exclusively on its ability
+to figure out how your iterators should behave for non-standard cases will result in a considerable
+performance degradation - just as you'd expect if working in a fully dynamic language.
+
+Where sequences shines is in helping you identify opportunities for code reuse where iterators can be
+treated as a first-class type in their own right.
+
+Aside from its practical use in reducing the complexity of your collection types, sequences is also a
+reasonable introduction to Go's type reflection mechanisms. The author has enjoyed many hours working
+with type introspection since Go was first released to the public and hopes that others studying this
+codebase will be inspired to explore this oft overlooked topic.
+
+
+== Installation ==
+
+Sequences should install successfully with goinstall:
+
+	goinstall -v github.com/feyeleanor/sequences
