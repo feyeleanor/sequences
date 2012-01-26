@@ -150,3 +150,173 @@ func TestOne(t *testing.T) {
 	RefuteOne([]interface{}{1, 1}, IsPositive)
 	RefuteOne([]interface{}{1, 1, 1}, IsPositive)
 }
+
+func TestDensity(t *testing.T) {
+	IsPositive := func(i interface{}) bool {
+		if i, ok := i.(int); ok {
+			return i > 0
+		}
+		return false
+	}
+
+	ConfirmDensity := func(o interface{}, r float64) {
+		tol := 0.0001
+		if d := Density(o, IsPositive); (d - r > tol) && (r - d < tol) {
+			t.Fatalf("Density(%v, f) should be %v with a tolerance of %v but is %v", o, r, tol, d)
+		}
+	}
+
+	ConfirmDensity(nil, 0.0)
+	ConfirmDensity([]int{}, 0.0)
+	ConfirmDensity([]int{0}, 0.0)
+	ConfirmDensity([]int{1}, 1.0)
+
+	ConfirmDensity([]int{0, 1}, 0.5)
+	ConfirmDensity([]int{1, 0}, 0.5)
+
+	ConfirmDensity([]int{0, 0, 1}, 0.3333)
+	ConfirmDensity([]int{0, 1, 0}, 0.3333)
+	ConfirmDensity([]int{1, 0, 0}, 0.3333)
+
+	ConfirmDensity([]int{1, 0, 1}, 0.6666)
+	ConfirmDensity([]int{1, 1, 0}, 0.6666)
+	ConfirmDensity([]int{0, 1, 1}, 0.6666)
+
+	ConfirmDensity([]int{0, 0, 0, 1}, 0.25)
+	ConfirmDensity([]int{0, 0, 1, 0}, 0.25)
+	ConfirmDensity([]int{0, 1, 0, 0}, 0.25)
+	ConfirmDensity([]int{1, 0, 0, 0}, 0.25)
+
+	ConfirmDensity([]int{1, 1, 0, 1}, 0.75)
+	ConfirmDensity([]int{1, 0, 1, 1}, 0.75)
+	ConfirmDensity([]int{0, 1, 1, 1}, 0.75)
+	ConfirmDensity([]int{1, 1, 1, 0}, 0.75)
+}
+
+func TestIsDense(t *testing.T) {
+	IsPositive := func(i interface{}) bool {
+		if i, ok := i.(int); ok {
+			return i > 0
+		}
+		return false
+	}
+
+	ConfirmIsDense := func(o interface{}, d float64) {
+		if !IsDense(o, d, IsPositive) {
+			t.Fatalf("Dense(%v, %v, f) should be true but is false", o, d)
+		}
+	}
+
+	RefuteIsDense := func(o interface{}, d float64) {
+		if IsDense(o, d, IsPositive) {
+			t.Fatalf("Dense(%v, %v, f) should be false but is true", o, d)
+		}
+	}
+
+	RefuteIsDense(nil, 0.0)
+	RefuteIsDense(nil, 0.5)
+	RefuteIsDense(nil, 1.0)
+
+	RefuteIsDense([]int{}, 0.0)
+	RefuteIsDense([]int{}, 0.5)
+	RefuteIsDense([]int{}, 1.0)
+
+	RefuteIsDense([]int{0}, 0.0)
+	RefuteIsDense([]int{0}, 0.5)
+	RefuteIsDense([]int{0}, 1.0)
+
+	ConfirmIsDense([]int{0, 1}, 0.0)
+	ConfirmIsDense([]int{0, 1}, 0.45)
+	RefuteIsDense([]int{0, 1}, 0.55)
+	RefuteIsDense([]int{0, 1}, 1.0)
+
+	ConfirmIsDense([]int{0, 0, 1}, 0.0)
+	RefuteIsDense([]int{0, 0, 1}, 0.5)
+	RefuteIsDense([]int{0, 0, 1}, 1.0)
+
+	ConfirmIsDense([]int{0, 1, 1}, 0.0)
+	ConfirmIsDense([]int{0, 1, 1}, 0.5)
+	RefuteIsDense([]int{0, 1, 1}, 1.0)
+
+	ConfirmIsDense([]int{0, 0, 0, 1}, 0.0)
+	RefuteIsDense([]int{0, 0, 0, 1}, 0.5)
+	RefuteIsDense([]int{0, 0, 0, 1}, 1.0)
+
+	ConfirmIsDense([]int{0, 0, 1, 1}, 0.0)
+	ConfirmIsDense([]int{0, 0, 1, 1}, 0.45)
+	RefuteIsDense([]int{0, 0, 1, 1}, 0.55)
+	RefuteIsDense([]int{0, 0, 1, 1}, 1.0)
+
+	ConfirmIsDense([]int{0, 1, 1, 1}, 0.0)
+	ConfirmIsDense([]int{0, 1, 1, 1}, 0.5)
+	RefuteIsDense([]int{0, 1, 1, 1}, 1.0)
+
+	ConfirmIsDense([]int{1, 1, 1, 1}, 0.0)
+	ConfirmIsDense([]int{1, 1, 1, 1}, 0.5)
+	ConfirmIsDense([]int{1, 1, 1, 1}, 0.99)
+	RefuteIsDense([]int{1, 1, 1, 1}, 1.0)
+}
+
+func TestIsSparse(t *testing.T) {
+	IsPositive := func(i interface{}) bool {
+		if i, ok := i.(int); ok {
+			return i > 0
+		}
+		return false
+	}
+
+	ConfirmIsSparse := func(o interface{}, d float64) {
+		if !IsSparse(o, d, IsPositive) {
+			t.Fatalf("Dense(%v, %v, f) should be true but is false", o, d)
+		}
+	}
+
+	RefuteIsSparse := func(o interface{}, d float64) {
+		if IsSparse(o, d, IsPositive) {
+			t.Fatalf("Dense(%v, %v, f) should be false but is true", o, d)
+		}
+	}
+
+	ConfirmIsSparse(nil, 0.0)
+	ConfirmIsSparse(nil, 0.5)
+	ConfirmIsSparse(nil, 1.0)
+
+	ConfirmIsSparse([]int{}, 0.0)
+	ConfirmIsSparse([]int{}, 0.5)
+	ConfirmIsSparse([]int{}, 1.0)
+
+	ConfirmIsSparse([]int{0}, 0.0)
+	ConfirmIsSparse([]int{0}, 0.5)
+	ConfirmIsSparse([]int{0}, 1.0)
+
+	RefuteIsSparse([]int{0, 1}, 0.0)
+	RefuteIsSparse([]int{0, 1}, 0.45)
+	ConfirmIsSparse([]int{0, 1}, 0.55)
+	ConfirmIsSparse([]int{0, 1}, 1.0)
+
+	RefuteIsSparse([]int{0, 0, 1}, 0.0)
+	ConfirmIsSparse([]int{0, 0, 1}, 0.5)
+	ConfirmIsSparse([]int{0, 0, 1}, 1.0)
+
+	RefuteIsSparse([]int{0, 1, 1}, 0.0)
+	RefuteIsSparse([]int{0, 1, 1}, 0.5)
+	ConfirmIsSparse([]int{0, 1, 1}, 1.0)
+
+	RefuteIsSparse([]int{0, 0, 0, 1}, 0.0)
+	ConfirmIsSparse([]int{0, 0, 0, 1}, 0.5)
+	ConfirmIsSparse([]int{0, 0, 0, 1}, 1.0)
+
+	RefuteIsSparse([]int{0, 0, 1, 1}, 0.0)
+	RefuteIsSparse([]int{0, 0, 1, 1}, 0.45)
+	ConfirmIsSparse([]int{0, 0, 1, 1}, 0.55)
+	ConfirmIsSparse([]int{0, 0, 1, 1}, 1.0)
+
+	RefuteIsSparse([]int{0, 1, 1, 1}, 0.0)
+	RefuteIsSparse([]int{0, 1, 1, 1}, 0.5)
+	ConfirmIsSparse([]int{0, 1, 1, 1}, 1.0)
+
+	RefuteIsSparse([]int{1, 1, 1, 1}, 0.0)
+	RefuteIsSparse([]int{1, 1, 1, 1}, 0.5)
+	RefuteIsSparse([]int{1, 1, 1, 1}, 0.99)
+	ConfirmIsSparse([]int{1, 1, 1, 1}, 1.0)
+}
