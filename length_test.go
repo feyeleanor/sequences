@@ -11,6 +11,7 @@ func TestLen(t *testing.T) {
 			t.Fatalf("Len(%v) should be %v but is %v", o, r, x)
 		}
 	}
+	ConfirmLen(nil, 0)
 	ConfirmLen(0, 1)
 	ConfirmLen(([]int)(nil), 0)
 	ConfirmLen([]int{}, 0)
@@ -28,6 +29,7 @@ func TestCap(t *testing.T) {
 			t.Fatalf("Len(%v) should be %v but is %v", o, r, x)
 		}
 	}
+	ConfirmCap(nil, 0)
 	ConfirmCap(0, 1)
 	ConfirmCap(([]int)(nil), 0)
 	ConfirmCap([]int{}, 0)
