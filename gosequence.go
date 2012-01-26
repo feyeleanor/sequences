@@ -2,6 +2,14 @@ package gosequence
 
 import "reflect"
 
+type Measurable interface {
+	Len() int
+}
+
+type Confined interface {
+	Cap() int
+}
+
 type Indexable interface {
 	Len() int
 	At(index int) interface{}
@@ -12,7 +20,6 @@ type Mappable interface {
 	Lookup(key interface{}) interface{}
 	Keys() interface{}
 }
-
 
 type Iterable interface {
 	Each(function interface{}) bool

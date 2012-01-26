@@ -4,6 +4,7 @@ TARG=gosequence
 
 GOFILES=\
 	gosequence.go\
+	length.go\
 	each.go\
 	while.go\
 	reduce.go\

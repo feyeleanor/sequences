@@ -3,7 +3,7 @@ package gosequence
 import "reflect"
 
 func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, ok bool) {
-	end := c.Len()
+	end := Len(c)
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:	for i := 0; i < end; i++ {
 															seed = f(seed, c.At(i))
@@ -40,7 +40,7 @@ func reduceIterable(container Iterable, seed, f interface{}) (r interface{}, ok 
 }
 
 func reduceSlice(s reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
-	end := s.Len()
+	end := Len(s)
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:	v := reflect.New(s.Type().Elem()).Elem()
 														v.Set(reflect.ValueOf(seed))
@@ -54,7 +54,7 @@ func reduceSlice(s reflect.Value, seed, f interface{}) (r interface{}, ok bool) 
 															v := reflect.New(s.Type().Elem()).Elem()
 															v.Set(reflect.ValueOf(seed))
 															switch f.Type().NumIn() {
-															case 2:				for i, end := 0, s.Len(); i < end; i++ {
+															case 2:				for i, end := 0, Len(s); i < end; i++ {
 																					v = f.Call([]reflect.Value{ v, s.Index(i) })[0]
 																				}
 																				ok = true

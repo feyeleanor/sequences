@@ -3,7 +3,7 @@ package gosequence
 import R "reflect"
 
 func eachIndexable(container Indexable, f interface{}) (ok bool) {
-	end := container.Len()
+	end := Len(container)
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
 												f(container.At(i))
@@ -101,12 +101,17 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 											})
 											ok = true
 
+	case func(string, interface{}):			Each(container.Keys(), func(v interface{}) {
+												f(v.(string), container.Lookup(v))
+											})
+											ok = true
+
 	case func(interface{}, interface{}):	Each(container.Keys(), func(v interface{}) {
 												f(v, container.Lookup(v))
 											})
 											ok = true
 
-	case func(...interface{}):				l := container.Len()
+	case func(...interface{}):				l := Len(container)
 											p := make([]interface{}, l, l)
 											Each(container.Keys(), func(i int, v interface{}) {
 												p[i] = container.Lookup(v)
@@ -124,6 +129,11 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 											})
 											ok = true
 
+	case func(string, R.Value):				Each(container.Keys(), func(v interface{}) {
+												f(v.(string), R.ValueOf(container.Lookup(v)))
+											})
+											ok = true
+
 	case func(interface{}, R.Value):		Each(container.Keys(), func(v interface{}) {
 												f(v, R.ValueOf(container.Lookup(v)))
 											})
@@ -134,7 +144,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 											})
 											ok = true
 
-	case func(...R.Value):					l := container.Len()
+	case func(...R.Value):					l := Len(container)
 											p := make([]R.Value, l, l)
 											Each(container.Keys(), func(i int, v interface{}) {
 												p[i] = R.ValueOf(container.Lookup(v))
@@ -145,7 +155,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 	default:								if f := R.ValueOf(f); f.Kind() == R.Func {
 												if t := f.Type(); t.IsVariadic() {
 													// f(...v)
-													l := container.Len()
+													l := Len(container)
 													p := make([]R.Value, l, l)
 													Each(container.Keys(), func(i int, v interface{}) {
 														p[i] = R.ValueOf(container.Lookup(v))
@@ -177,7 +187,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 }
 
 func eachSlice(s R.Value, f interface{}) (ok bool) {
-	end := s.Len()
+	end := Len(s)
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
 												f(s.Index(i).Interface())
@@ -229,7 +239,7 @@ func eachSlice(s R.Value, f interface{}) (ok bool) {
 											ok = true
 
 	default:								if f := R.ValueOf(f); f.Kind() == R.Func {
-												end := s.Len()
+												end := Len(s)
 												if t := f.Type(); t.IsVariadic() {
 													//	f(...v)
 													p := make([]R.Value, end, end)
@@ -269,12 +279,22 @@ func eachMap(m R.Value, f interface{}) (ok bool) {
 											}
 											ok = true
 
+	case func(int, interface{}):			for _, key := range m.MapKeys() {
+												f(int(key.Int()), m.MapIndex(key).Interface())
+											}
+											ok = true
+
+	case func(string, interface{}):			for _, key := range m.MapKeys() {
+												f(key.String(), m.MapIndex(key).Interface())
+											}
+											ok = true
+
 	case func(interface{}, interface{}):	for _, key := range m.MapKeys() {
 												f(key.Interface(), m.MapIndex(key).Interface())
 											}
 											ok = true
 
-	case func(...interface{}):				l := m.Len()
+	case func(...interface{}):				l := Len(m)
 											p := make([]interface{}, l, l)
 											for i, key := range m.MapKeys() {
 												p[i] = m.MapIndex(key).Interface()
@@ -292,12 +312,22 @@ func eachMap(m R.Value, f interface{}) (ok bool) {
 											}
 											ok = true
 
+	case func(int, R.Value):				for _, key := range m.MapKeys() {
+												f(int(key.Int()), m.MapIndex(key))
+											}
+											ok = true
+
+	case func(string, R.Value):				for _, key := range m.MapKeys() {
+												f(key.String(), m.MapIndex(key))
+											}
+											ok = true
+
 	case func(R.Value, R.Value):			for _, key := range m.MapKeys() {
 												f(key, m.MapIndex(key))
 											}
 											ok = true
 
-	case func(...R.Value):					l := m.Len()
+	case func(...R.Value):					l := Len(m)
 											p := make([]R.Value, l, l)
 											for i, key := range m.MapKeys() {
 												p[i] = m.MapIndex(key)
@@ -308,7 +338,7 @@ func eachMap(m R.Value, f interface{}) (ok bool) {
 	default:								if f := R.ValueOf(f); f.Kind() == R.Func {
 												if t := f.Type(); t.IsVariadic() {
 													//	f(...v)
-													l := m.Len()
+													l := Len(m)
 													p := make([]R.Value, l, l)
 													for i, key := range m.MapKeys() {
 														p[i] = m.MapIndex(key)

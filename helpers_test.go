@@ -79,8 +79,9 @@ func (m mappable_slice) Lookup(key interface{}) interface{} {
 }
 
 func (m mappable_slice) Keys() interface{} {
-	r := make(iterable_slice, len(m), len(m))
-	for i := len(m) - 1; i > -1; i-- {
+	l := len(m)
+	r := make(iterable_slice, l, l)
+	for i := l - 1; i > -1; i-- {
 		r[i] = i
 	}
 	return r
@@ -108,6 +109,27 @@ func (m mappable_map) Keys() interface{} {
 }
 
 
+type mappable_string_map map[string]int
+
+func (m mappable_string_map) Len() int {
+	return len(m)
+}
+
+func (m mappable_string_map) Lookup(key interface{}) interface{} {
+	return m[key.(string)]
+}
+
+func (m mappable_string_map) Keys() interface{} {
+	r := make(iterable_slice, len(m), len(m))
+	i := 0
+	for k, _ := range m {
+		r[i] = k
+		i++
+	}
+	return r
+}
+
+
 type mappable_function func(i int) interface{}
 
 func (f mappable_function) Len() int {
@@ -119,8 +141,9 @@ func (f mappable_function) Lookup(x interface{}) interface{} {
 }
 
 func (m mappable_function) Keys() interface{} {
-	r := make(iterable_slice, m.Len(), m.Len())
-	for i := m.Len() - 1; i > -1; i-- {
+	l := Len(m)
+	r := make(iterable_slice, l, l)
+	for i := l - 1; i > -1; i-- {
 		r[i] = i
 	}
 	return r

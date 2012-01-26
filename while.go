@@ -3,7 +3,7 @@ package gosequence
 import R "reflect"
 
 func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
-	if end := container.Len(); end > 0 {
+	if end := Len(container); end > 0 {
 		switch f := f.(type) {
 		case func(interface{}) bool:				if f(container.At(0)) == r {
 														count = 1
@@ -144,7 +144,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 }
 
 func whileSlice(s R.Value, r bool, f interface{}) (count int) {
-	if end := s.Len(); end > 0 {
+	if end := Len(s); end > 0 {
 		switch f := f.(type) {
 		case func(interface{}) bool:					if f(s.Index(0).Interface()) == r {
 															count = 1
