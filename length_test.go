@@ -1,4 +1,4 @@
-package gosequence
+package sequences
 
 import (
 	R "reflect"

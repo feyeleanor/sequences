@@ -1,9 +1,9 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=gosequence
+TARG=sequences
 
 GOFILES=\
-	gosequence.go\
+	sequences.go\
 	length.go\
 	each.go\
 	while.go\

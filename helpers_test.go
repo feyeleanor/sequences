@@ -1,4 +1,4 @@
-package gosequence
+package sequences
 
 type iterable_slice []interface{}
 
