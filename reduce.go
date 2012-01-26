@@ -6,7 +6,7 @@ func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, ok bool) 
 	end := Len(c)
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:	for i := 0; i < end; i++ {
-															seed = f(seed, c.At(i))
+															seed = f(seed, c.AtOffset(i))
 														}
 														ok = true
 
@@ -14,7 +14,7 @@ func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, ok bool) 
 															switch f.Type().NumIn() {
 															case 2:				p := make([]reflect.Value, 2, 2)
 																				for i := 0; i < end; i++ {
-																					p[0], p[1] = reflect.ValueOf(i), reflect.ValueOf(c.At(i))
+																					p[0], p[1] = reflect.ValueOf(i), reflect.ValueOf(c.AtOffset(i))
 																					f.Call(p)
 																				}
 																				ok = true

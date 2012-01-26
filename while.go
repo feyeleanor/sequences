@@ -5,30 +5,30 @@ import R "reflect"
 func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 	if end := Len(container); end > 0 {
 		switch f := f.(type) {
-		case func(interface{}) bool:				if f(container.At(0)) == r {
+		case func(interface{}) bool:				if f(container.AtOffset(0)) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(container.At(i)) != r {
+															if f(container.AtOffset(i)) != r {
 																break
 															}
 															count++
 														}
 													}
 
-		case func(int, interface{}) bool:			if f(0, container.At(0)) == r {
+		case func(int, interface{}) bool:			if f(0, container.AtOffset(0)) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(i, container.At(i)) != r {
+															if f(i, container.AtOffset(i)) != r {
 																break
 															}
 															count++
 														}
 													}
 
-		case func(interface{}, interface{}) bool:	if f(0, container.At(0)) == r {
+		case func(interface{}, interface{}) bool:	if f(0, container.AtOffset(0)) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(i, container.At(i)) != r {
+															if f(i, container.AtOffset(i)) != r {
 																break
 															}
 															count++
@@ -37,7 +37,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 
 		case func(...interface{}) bool:				p := make([]interface{}, end, end)
 													for i := 0; i < end; i++ {
-														p[i] = container.At(i)
+														p[i] = container.AtOffset(i)
 													}
 													if f(p...) == r {
 														count = 1
@@ -46,34 +46,34 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 
 		case func(bool, ...interface{}) int:		p := make([]interface{}, end, end)
 													for i := 0; i < end; i++ {
-														p[i] = container.At(i)
+														p[i] = container.AtOffset(i)
 													}
 													count = f(r, p...)
 
-		case func(R.Value) bool:					if f(R.ValueOf(container.At(0))) == r {
+		case func(R.Value) bool:					if f(R.ValueOf(container.AtOffset(0))) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(R.ValueOf(container.At(i))) != r {
+															if f(R.ValueOf(container.AtOffset(i))) != r {
 																break
 															}
 															count++
 														}
 													}
 
-		case func(int, R.Value) bool:				if f(0, R.ValueOf(container.At(0))) == r {
+		case func(int, R.Value) bool:				if f(0, R.ValueOf(container.AtOffset(0))) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(i, R.ValueOf(container.At(i))) != r {
+															if f(i, R.ValueOf(container.AtOffset(i))) != r {
 																break
 															}
 															count++
 														}
 													}
 
-		case func(R.Value, R.Value) bool:			if f(R.ValueOf(0), R.ValueOf(container.At(0))) == r {
+		case func(R.Value, R.Value) bool:			if f(R.ValueOf(0), R.ValueOf(container.AtOffset(0))) == r {
 														count = 1
 														for i := 1; i < end; i++ {
-															if f(R.ValueOf(i), R.ValueOf(container.At(i))) != r {
+															if f(R.ValueOf(i), R.ValueOf(container.AtOffset(i))) != r {
 																break
 															}
 															count++
@@ -82,7 +82,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 
 		case func(...R.Value) bool:					p := make([]R.Value, end, end)
 													for i := 0; i < end; i++ {
-														p[i] = R.ValueOf(container.At(i))
+														p[i] = R.ValueOf(container.AtOffset(i))
 													}
 													if f(p...) == r {
 														count = 1
@@ -90,7 +90,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 
 		case func(bool, ...R.Value) int:			p := make([]R.Value, end, end)
 													for i := 0; i < end; i++ {
-														p[i] = R.ValueOf(container.At(i))
+														p[i] = R.ValueOf(container.AtOffset(i))
 													}
 													count = f(r, p...)
 
@@ -100,7 +100,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 															case 1:				//	f(...v) bool
 																				p := make([]R.Value, end, end)
 																				for i := 0; i < end; i++ {
-																					p[i] = R.ValueOf(container.At(i))
+																					p[i] = R.ValueOf(container.AtOffset(i))
 																				}
 																				if f.Call(p)[0].Bool() == r {
 																					count = 1
@@ -110,7 +110,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 																				p := make([]R.Value, 1, 4)
 																				p[0] = R.ValueOf(r)
 																				for i := 0; i < end; i++ {
-																					p = append(p, R.ValueOf(container.At(i)))
+																					p = append(p, R.ValueOf(container.AtOffset(i)))
 																				}
 																				count = int(f.Call(p)[0].Int())
 															}
@@ -119,7 +119,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 															case 1:				//	f(v) bool
 																				p := make([]R.Value, 1, 1)
 																				for ; count < end; count++ {
-																					p[0] = R.ValueOf(container.At(count))
+																					p[0] = R.ValueOf(container.AtOffset(count))
 																					if f.Call(p)[0].Bool() != r {
 																						break
 																					}
@@ -129,7 +129,7 @@ func whileIndexable(container Indexable, r bool, f interface{}) (count int) {
 																				p := make([]R.Value, 2, 2)
 																				for ; count < end; count++ {
 																					p[0] = R.ValueOf(count)
-																					p[1] = R.ValueOf(container.At(count))
+																					p[1] = R.ValueOf(container.AtOffset(count))
 																					if f.Call(p)[0].Bool() != r {
 																						break
 																					}

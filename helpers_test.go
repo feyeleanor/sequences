@@ -52,7 +52,7 @@ func (i indexable_slice) Len() int {
 	return len(i)
 }
 
-func (i indexable_slice) At(x int) interface{} {
+func (i indexable_slice) AtOffset(x int) interface{} {
 	return i[x]
 }
 
@@ -63,7 +63,7 @@ func (f indexable_function) Len() int {
 	return 10
 }
 
-func (f indexable_function) At(x int) interface{} {
+func (f indexable_function) AtOffset(x int) interface{} {
 	return f(x)
 }
 
@@ -74,7 +74,7 @@ func (m mappable_slice) Len() int {
 	return len(m)
 }
 
-func (m mappable_slice) Lookup(key interface{}) interface{} {
+func (m mappable_slice) StoredAs(key interface{}) interface{} {
 	return m[key.(int)]
 }
 
@@ -94,7 +94,7 @@ func (m mappable_map) Len() int {
 	return len(m)
 }
 
-func (m mappable_map) Lookup(key interface{}) interface{} {
+func (m mappable_map) StoredAs(key interface{}) interface{} {
 	return m[key.(int)]
 }
 
@@ -115,7 +115,7 @@ func (m mappable_string_map) Len() int {
 	return len(m)
 }
 
-func (m mappable_string_map) Lookup(key interface{}) interface{} {
+func (m mappable_string_map) StoredAs(key interface{}) interface{} {
 	return m[key.(string)]
 }
 
@@ -136,7 +136,7 @@ func (f mappable_function) Len() int {
 	return 10
 }
 
-func (f mappable_function) Lookup(x interface{}) interface{} {
+func (f mappable_function) StoredAs(x interface{}) interface{} {
 	return f(x.(int))
 }
 

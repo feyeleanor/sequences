@@ -86,7 +86,7 @@ func TestEachIndexable(t *testing.T) {
 
 	ConfirmEachIndexable := func(s Indexable) {
 		ConfirmEach(s, func(v interface{}) {
-			if v != s.At(count) {
+			if v != s.AtOffset(count) {
 				t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
@@ -95,7 +95,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(i int, v interface{}) {
 			switch {
 			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
-			case v != s.At(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v != s.AtOffset(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -103,7 +103,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(k, v interface{}) {
 			switch {
 			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
-			case v != s.At(count):				t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v != s.AtOffset(count):				t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -117,7 +117,7 @@ func TestEachIndexable(t *testing.T) {
 		})
 
 		ConfirmEach(s, func(v R.Value) {
-			if v.Interface() != s.At(count) {
+			if v.Interface() != s.AtOffset(count) {
 				t.Fatalf("element %v erroneously reported as %v", count, v.Interface())
 			}
 			count++
@@ -126,7 +126,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(i int, v R.Value) {
 			switch {
 			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
-			case v.Interface() != s.At(i):		t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v.Interface() != s.AtOffset(i):		t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -134,7 +134,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(k interface{}, v R.Value) {
 			switch {
 			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
-			case v.Interface() != s.At(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v.Interface() != s.AtOffset(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -142,7 +142,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(k, v R.Value) {
 			switch {
 			case k.Interface() != count:		t.Fatalf("index %v erroneously reported as %v", count, k)
-			case v.Interface() != s.At(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v.Interface() != s.AtOffset(count):	t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -164,7 +164,7 @@ func TestEachIndexable(t *testing.T) {
 		})
 
 		ConfirmEach(s, func(v int) {
-			if v != s.At(count) {
+			if v != s.AtOffset(count) {
 				t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
@@ -173,7 +173,7 @@ func TestEachIndexable(t *testing.T) {
 		ConfirmEach(s, func(i, v int) {
 			switch {
 			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
-			case v != s.At(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
+			case v != s.AtOffset(i):					t.Fatalf("element %v erroneously reported as %v", count, v)
 			}
 			count++
 		})
@@ -208,14 +208,14 @@ func TestEachMappable(t *testing.T) {
 		})
 
 		ConfirmEach(m, func(i int, v interface{}) {
-			if v != m.Lookup(i) {
+			if v != m.StoredAs(i) {
 				t.Fatalf("element %v erroneously reported as %v", i, v)
 			}
 			count++
 		})
 
 		ConfirmEach(m, func(k, v interface{}) {
-			if v != m.Lookup(k) {
+			if v != m.StoredAs(k) {
 				t.Fatalf("element %v erroneously reported as %v", k, v)
 			}
 			count++
@@ -234,21 +234,21 @@ func TestEachMappable(t *testing.T) {
 		})
 
 		ConfirmEach(m, func(i int, v R.Value) {
-			if v.Interface() != m.Lookup(i) {
+			if v.Interface() != m.StoredAs(i) {
 				t.Fatalf("element %v erroneously reported as %v", i, v)
 			}
 			count++
 		})
 
 		ConfirmEach(m, func(k interface{}, v R.Value) {
-			if v.Interface() != m.Lookup(k) {
+			if v.Interface() != m.StoredAs(k) {
 				t.Fatalf("element %v erroneously reported as %v", k, v)
 			}
 			count++
 		})
 
 		ConfirmEach(m, func(k, v R.Value) {
-			if v.Interface() != m.Lookup(k.Interface()) {
+			if v.Interface() != m.StoredAs(k.Interface()) {
 				t.Fatalf("element %v erroneously reported as %v", k.Interface(), v.Interface())
 			}
 			count++
@@ -275,7 +275,7 @@ func TestEachMappable(t *testing.T) {
 		})
 
 		ConfirmEach(m, func(i, v int) {
-			if v != m.Lookup(i) {
+			if v != m.StoredAs(i) {
 				t.Fatalf("element %v erroneously reported as %v", i, v)
 			}
 			count++
@@ -288,14 +288,14 @@ func TestEachMappable(t *testing.T) {
 
 	m := mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3}
 	ConfirmEach(m, func(k string, v interface{}) {
-		if v != m.Lookup(k) {
+		if v != m.StoredAs(k) {
 			t.Fatalf("element %v erroneously reported as %v", k, v)
 		}
 		count++
 	})
 
 	ConfirmEach(m, func(k string, v R.Value) {
-		if v.Interface() != m.Lookup(k) {
+		if v.Interface() != m.StoredAs(k) {
 			t.Fatalf("element %v erroneously reported as %v", k, v.Interface())
 		}
 		count++
@@ -528,23 +528,8 @@ func TestEachMap(t *testing.T) {
 		count++
 	})
 
-	ConfirmEach(MS, func(k, v interface{}) {
-		if v != MS[k.(string)] {
-			t.Fatalf("element %v erroneously reported as %v", k, v)
-		}
-		count++
-	})
-
-
 	ConfirmEach(MS, func(k string, v R.Value) {
 		if v.Interface() != MS[k] {
-			t.Fatalf("element %v erroneously reported as %v", k, v)
-		}
-		count++
-	})
-
-	ConfirmEach(MS, func(k interface{}, v R.Value) {
-		if v.Interface() != MS[k.(string)] {
 			t.Fatalf("element %v erroneously reported as %v", k, v)
 		}
 		count++
@@ -552,24 +537,38 @@ func TestEachMap(t *testing.T) {
 }
 
 func TestEachChannel(t *testing.T) {
+	var count	int
 	var index	int
 
-	ConfirmEach := func(s []int, f interface{}) {
-		var v		int
-		var count	int
-
-		C := make(chan int)
+	Generate := func(s []int) (c chan int) {
+		c = make(chan int)
 		go func() {
-			for count, v = range s {
-				C <- v
+			for _, v := range s {
+				c <- v
+				count++
 			}
-			close(C)
+			close(c)
 		}()
+		return c
+	}
 
+	ConfirmEach := func(s []int, f interface{}) {
+		count = 0
 		index = 0
-		Each(C, f)
-		if count != len(s) - 1 {
-			t.Fatalf("total iterations should be %v but is %v", len(s) - 1, count)
+		switch {
+		case !Each(Generate(s), f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):			t.Fatalf("total itmes produced should be %v but are %v", len(s), count)
+		case index != len(s):			t.Fatalf("total iterations should be %v but are %v", len(s), index)
+		}
+	}
+
+	ConfirmVariadicEach := func(s []int, f interface{}) {
+		count = 0
+		index = 0
+		switch {
+		case !Each(Generate(s), f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):			t.Fatalf("total items produced should be %v but are %v", len(s), count)
+		case index != 1:				t.Fatalf("total iterations should be 1 but are %v", index)
 		}
 	}
 
@@ -584,7 +583,85 @@ func TestEachChannel(t *testing.T) {
 	ConfirmEach(S, func(i int, v interface{}) {
 		switch {
 		case i != index:		t.Fatalf("index %v erroneously reported as %v", index, i)
-		case v != S[i]:			t.Fatalf("value %v erroneously reported as %v", S[9], v)
+		case v != S[i]:			t.Fatalf("value %v erroneously reported as %v", S[i], v)
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(i, v interface{}) {
+		switch {
+		case i != index:		t.Fatalf("index %v erroneously reported as %v", index, i)
+		case v != S[i.(int)]:	t.Fatalf("value %v erroneously reported as %v", S[i.(int)], v)
+		}
+		index++
+	})
+
+	ConfirmVariadicEach(S, func(v ...interface{}) {
+		switch {
+		case index != 0:					t.Fatalf("variadic function erroneously called %v times", index)
+		case len(v) != Len(S):				t.Fatalf("variadic slice of keys for %v erroneously passed as %v", S, v)
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(v R.Value) {
+		if v.Interface() != S[index] {
+			t.Fatalf("index %v erroneously reported as %v", index, v.Interface())
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(i int, v R.Value) {
+		switch {
+		case i != index:					t.Fatalf("index %v erroneously reported as %v", index, i)
+		case v.Interface() != S[i]:			t.Fatalf("value %v erroneously reported as %v", S[i], v.Interface())
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(i interface{}, v R.Value) {
+		switch {
+		case i != index:					t.Fatalf("index %v erroneously reported as %v", index, i)
+		case v.Interface() != S[i.(int)]:	t.Fatalf("value %v erroneously reported as %v", S[i.(int)], v.Interface())
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(i, v R.Value) {
+		switch x := int(i.Int()); {
+		case x != index:				t.Fatalf("index %v erroneously reported as %v", index, x)
+		case v.Interface() != S[x]:		t.Fatalf("value %v erroneously reported as %v", S[x], v.Interface())
+		}
+		index++
+	})
+
+	ConfirmVariadicEach(S, func(v ...R.Value) {
+		switch {
+		case index != 0:					t.Fatalf("variadic function erroneously called %v times", index)
+		case len(v) != Len(S):				t.Fatalf("variadic slice of keys for %v erroneously passed as %v", S, v)
+		}
+		index++
+	})
+
+	ConfirmVariadicEach(S, func(v ...int) {
+		switch {
+		case index != 0:					t.Fatalf("variadic function erroneously called %v times", index)
+		case len(v) != Len(S):				t.Fatalf("variadic slice of keys for %v erroneously passed as %v", S, v)
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(v int) {
+		if v != S[index] {
+			t.Fatalf("index %v erroneously reported as %v", index, v)
+		}
+		index++
+	})
+
+	ConfirmEach(S, func(i, v int) {
+		switch {
+		case i != index:					t.Fatalf("index %v erroneously reported as %v", index, i)
+		case v != S[i]:						t.Fatalf("value %v erroneously reported as %v", S[i], v)
 		}
 		index++
 	})

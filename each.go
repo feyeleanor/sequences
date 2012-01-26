@@ -6,51 +6,51 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 	end := Len(container)
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
-												f(container.At(i))
+												f(container.AtOffset(i))
 											}
 											ok = true
 
 	case func(int, interface{}):			for i := 0; i < end; i++ {
-												f(i, container.At(i))
+												f(i, container.AtOffset(i))
 											}
 											ok = true
 
 	case func(interface{}, interface{}):	for i := 0; i < end; i++ {
-												f(i, container.At(i))
+												f(i, container.AtOffset(i))
 											}
 											ok = true
 
 	case func(...interface{}):				p := make([]interface{}, end, end)
 											for i := 0; i < end; i++ {
-												p[i] = container.At(i)
+												p[i] = container.AtOffset(i)
 											}
 											f(p...)
 											ok = true
 
 	case func(R.Value):						for i := 0; i < end; i++ {
-												f(R.ValueOf(container.At(i)))
+												f(R.ValueOf(container.AtOffset(i)))
 											}
 											ok = true
 
 	case func(int, R.Value):				for i := 0; i < end; i++ {
-												f(i, R.ValueOf(container.At(i)))
+												f(i, R.ValueOf(container.AtOffset(i)))
 											}
 											ok = true
 
 	case func(interface{}, R.Value):		for i := 0; i < end; i++ {
-												f(i, R.ValueOf(container.At(i)))
+												f(i, R.ValueOf(container.AtOffset(i)))
 											}
 											ok = true
 
 	case func(R.Value, R.Value):			for i := 0; i < end; i++ {
-												f(R.ValueOf(i), R.ValueOf(container.At(i)))
+												f(R.ValueOf(i), R.ValueOf(container.AtOffset(i)))
 											}
 											ok = true
 
 
 	case func(...R.Value):					p := make([]R.Value, end, end)
 											for i := 0; i < end; i++ {
-												p[i] = R.ValueOf(container.At(i))
+												p[i] = R.ValueOf(container.AtOffset(i))
 											}
 											f(p...)
 											ok = true
@@ -60,7 +60,7 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 													//	f(...v)
 													p := make([]R.Value, end, end)
 													for i := 0; i < end; i++ {
-														p[i] = R.ValueOf(container.At(i))
+														p[i] = R.ValueOf(container.AtOffset(i))
 													}
 													f.Call(p)
 													ok = true
@@ -69,7 +69,7 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 													case 1:				//	f(v)
 																		p := make([]R.Value, 1, 1)
 																		for i := 0; i < end; i++ {
-																			p[0] = R.ValueOf(container.At(i))
+																			p[0] = R.ValueOf(container.AtOffset(i))
 																			f.Call(p)
 																		}
 																		ok = true
@@ -77,7 +77,7 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 													case 2:				//	f(i, v)
 																		p := make([]R.Value, 2, 2)
 																		for i := 0; i < end; i++ {
-																			p[0], p[1] = R.ValueOf(i), R.ValueOf(container.At(i))
+																			p[0], p[1] = R.ValueOf(i), R.ValueOf(container.AtOffset(i))
 																			f.Call(p)
 																		}
 																		ok = true
@@ -91,63 +91,63 @@ func eachIndexable(container Indexable, f interface{}) (ok bool) {
 func eachMappable(container Mappable, f interface{}) (ok bool) {
 	switch f := f.(type) {
 	case func(interface{}):					Each(container.Keys(), func(v interface{}) {
-												f(container.Lookup(v))
+												f(container.StoredAs(v))
 												
 											})
 											ok = true
 
 	case func(int, interface{}):			Each(container.Keys(), func(v interface{}) {
-												f(v.(int), container.Lookup(v))
+												f(v.(int), container.StoredAs(v))
 											})
 											ok = true
 
 	case func(string, interface{}):			Each(container.Keys(), func(v interface{}) {
-												f(v.(string), container.Lookup(v))
+												f(v.(string), container.StoredAs(v))
 											})
 											ok = true
 
 	case func(interface{}, interface{}):	Each(container.Keys(), func(v interface{}) {
-												f(v, container.Lookup(v))
+												f(v, container.StoredAs(v))
 											})
 											ok = true
 
 	case func(...interface{}):				l := Len(container)
 											p := make([]interface{}, l, l)
 											Each(container.Keys(), func(i int, v interface{}) {
-												p[i] = container.Lookup(v)
+												p[i] = container.StoredAs(v)
 											})
 											f(p...)
 											ok = true
 
 	case func(R.Value):						Each(container.Keys(), func(v interface{}) {
-												f(R.ValueOf(container.Lookup(v)))
+												f(R.ValueOf(container.StoredAs(v)))
 											})
 											ok = true
 
 	case func(int, R.Value):				Each(container.Keys(), func(v interface{}) {
-												f(v.(int), R.ValueOf(container.Lookup(v)))
+												f(v.(int), R.ValueOf(container.StoredAs(v)))
 											})
 											ok = true
 
 	case func(string, R.Value):				Each(container.Keys(), func(v interface{}) {
-												f(v.(string), R.ValueOf(container.Lookup(v)))
+												f(v.(string), R.ValueOf(container.StoredAs(v)))
 											})
 											ok = true
 
 	case func(interface{}, R.Value):		Each(container.Keys(), func(v interface{}) {
-												f(v, R.ValueOf(container.Lookup(v)))
+												f(v, R.ValueOf(container.StoredAs(v)))
 											})
 											ok = true
 
 	case func(R.Value, R.Value):			Each(container.Keys(), func(v interface{}) {
-												f(R.ValueOf(v), R.ValueOf(container.Lookup(v)))
+												f(R.ValueOf(v), R.ValueOf(container.StoredAs(v)))
 											})
 											ok = true
 
 	case func(...R.Value):					l := Len(container)
 											p := make([]R.Value, l, l)
 											Each(container.Keys(), func(i int, v interface{}) {
-												p[i] = R.ValueOf(container.Lookup(v))
+												p[i] = R.ValueOf(container.StoredAs(v))
 											})
 											f(p...)
 											ok = true
@@ -158,7 +158,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 													l := Len(container)
 													p := make([]R.Value, l, l)
 													Each(container.Keys(), func(i int, v interface{}) {
-														p[i] = R.ValueOf(container.Lookup(v))
+														p[i] = R.ValueOf(container.StoredAs(v))
 													})
 													f.Call(p)
 													ok = true
@@ -167,7 +167,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 													case 1:				//	f(v)
 																		p := make([]R.Value, 1, 1)
 																		Each(container.Keys(), func(v interface{}) {
-																			p[0] = R.ValueOf(container.Lookup(v))
+																			p[0] = R.ValueOf(container.StoredAs(v))
 																			f.Call(p)																			
 																		})
 																		ok = true
@@ -175,7 +175,7 @@ func eachMappable(container Mappable, f interface{}) (ok bool) {
 													case 2:				// f(i, v)
 																		p := make([]R.Value, 2, 2)
 																		Each(container.Keys(), func(v interface{}) {
-																			p[0], p[1] = R.ValueOf(v), R.ValueOf(container.Lookup(v))
+																			p[0], p[1] = R.ValueOf(v), R.ValueOf(container.StoredAs(v))
 																			f.Call(p)
 																		})
 																		ok = true
@@ -443,6 +443,7 @@ func eachChannel(c R.Value, f interface{}) (ok bool) {
 														v, open = c.Recv()
 													}
 													f.Call(p)
+													ok = true
 												} else {
 													switch t.NumIn() {
 													case 1:				//	f(v)

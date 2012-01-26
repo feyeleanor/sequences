@@ -11,11 +11,11 @@ type Confined interface {
 }
 
 type Indexable interface {
-	At(index int) interface{}
+	AtOffset(index int) interface{}
 }
 
 type Mappable interface {
-	Lookup(key interface{}) interface{}
+	StoredAs(key interface{}) interface{}
 	Keys() interface{}
 }
 
