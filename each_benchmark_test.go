@@ -3,420 +3,519 @@ package sequences
 import R "reflect"
 import "testing"
 
-func BenchmarkEachIndexable1(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v interface{}) {}
+var (
+	IS = indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	MM = mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	MSM = mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
+	SI = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	MII = map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	MSI = map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
+	CI = func() (c chan int) {
+		c = make(chan int)
+		go func() {
+			for _, v := range SI {
+				c <- v
+			}
+			close(c)
+		}()
+		return
+	}
+
+	F1 = func(v interface{}) {}
+	F2 = func(i int, v interface{}) {}
+	F3 = func(i, v interface{}) {}
+	F4 = func(v ...interface{}) {}
+	F5 = func(v R.Value) {}
+	F6 = func(i int, v R.Value) {}
+	F7 = func(i interface{}, v R.Value) {}
+	F8 = func(i, v R.Value) {}
+	F9 = func(v ...R.Value) {}
+	F10 = func(v ...int) {}
+	F11 = func(v int) {}
+	F12 = func(i, v int) {}
+	F13 = func(s string, v interface{}) {}
+	F14 = func(s string, v R.Value) {}
+)
+
+
+func BenchmarkRangeSliceF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for _, v := range SI {
+			F1(v)
+		}
 	}
 }
 
-func BenchmarkEachIndexable2(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i int, v interface{}) {}
+func BenchmarkRangeSliceF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F2(i, v)
+		}
 	}
 }
 
-func BenchmarkEachIndexable3(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v interface{}) {}
+func BenchmarkRangeSliceF3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F3(i, v)
+		}
 	}
 }
 
-func BenchmarkEachIndexable4(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...interface{}) {}
+func BenchmarkRangeSliceF4(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		p := []interface{}{}
+		for _, v := range SI {
+			p = append(p, v)
+		}
+		F4(p...)
 	}
 }
 
-func BenchmarkEachIndexable5(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v R.Value) {}
+func BenchmarkRangeSliceF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for _, v := range SI {
+			F5(R.ValueOf(v))
+		}
 	}
 }
 
-func BenchmarkEachIndexable6(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i int, v R.Value) {}
+func BenchmarkRangeSliceF6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F6(i, R.ValueOf(v))
+		}
 	}
 }
 
-func BenchmarkEachIndexable7(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i interface{}, v R.Value) {}
+func BenchmarkRangeSliceF7(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F7(i, R.ValueOf(v))
+		}
 	}
 }
 
-func BenchmarkEachIndexable8(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v R.Value) {}
+func BenchmarkRangeSliceF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F8(R.ValueOf(i), R.ValueOf(v))
+		}
 	}
 }
 
-func BenchmarkEachIndexable9(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...R.Value) {}
+func BenchmarkRangeSliceF9(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		p := []R.Value{}
+		for _, v := range SI {
+			p = append(p, R.ValueOf(v))
+		}
+		F9(p...)
 	}
 }
 
-func BenchmarkEachIndexable10(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...int) {}
+func BenchmarkRangeSliceF10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		F10(SI...)
 	}
 }
 
-func BenchmarkEachIndexable11(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v int) {}
+func BenchmarkRangeSliceF11(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for _, v := range SI {
+			F11(v)
+		}
 	}
 }
 
-func BenchmarkEachIndexable12(b *testing.B) {
-	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v int) {}
+func BenchmarkRangeSliceF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		for i, v := range SI {
+			F12(i, v)
+		}
 	}
 }
 
-
-func BenchmarkEachMappable1(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v interface{}) {}
+func BenchmarkEachIndexableF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F1)
 	}
 }
 
-func BenchmarkEachMappable2(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i int, v interface{}) {}
+func BenchmarkEachIndexableF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F2)
 	}
 }
 
-func BenchmarkEachMappable3(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v interface{}) {}
+func BenchmarkEachIndexableF3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F3)
 	}
 }
 
-func BenchmarkEachMappable4(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...interface{}) {}
+func BenchmarkEachIndexableF4(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F4)
 	}
 }
 
-func BenchmarkEachMappable5(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v R.Value) {}
+func BenchmarkEachIndexableF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F5)
 	}
 }
 
-func BenchmarkEachMappable6(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i int, v R.Value) {}
+func BenchmarkEachIndexableF6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F6)
 	}
 }
 
-func BenchmarkEachMappable7(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i interface{}, v R.Value) {}
+func BenchmarkEachIndexableF7(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F7)
 	}
 }
 
-func BenchmarkEachMappable8(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v R.Value) {}
+func BenchmarkEachIndexableF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F8)
 	}
 }
 
-func BenchmarkEachMappable9(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...R.Value) {}
+func BenchmarkEachIndexableF9(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F9)
 	}
 }
 
-func BenchmarkEachMappable10(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...int) {}
+func BenchmarkEachIndexableF10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F10)
 	}
 }
 
-func BenchmarkEachMappable11(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v int) {}
+func BenchmarkEachIndexableF11(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F11)
 	}
 }
 
-func BenchmarkEachMappable12(b *testing.B) {
-	M := mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v int) {}
+func BenchmarkEachIndexableF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F12)
 	}
 }
 
-func BenchmarkEachMappable13(b *testing.B) {
-	M := mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
-	F := func(s string, v interface{}) {}
+func BenchmarkEachMappableF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(MM, F1)
 	}
 }
 
-func BenchmarkEachMappable14(b *testing.B) {
-	M := mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
-	F := func(s string, v R.Value) {}
+func BenchmarkEachMappableF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(MM, F2)
 	}
 }
 
-
-func BenchmarkEachSlice1(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v interface{}) {}
+func BenchmarkEachMappableF3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F3)
 	}
 }
 
-func BenchmarkEachSlice2(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i int, v interface{}) {}
+func BenchmarkEachMappableF4(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F4)
 	}
 }
 
-func BenchmarkEachSlice3(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v interface{}) {}
+func BenchmarkEachMappableF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F5)
 	}
 }
 
-func BenchmarkEachSlice4(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...interface{}) {}
+func BenchmarkEachMappableF6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F6)
 	}
 }
 
-func BenchmarkEachSlice5(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v R.Value) {}
+func BenchmarkEachMappableF7(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F7)
 	}
 }
 
-func BenchmarkEachSlice6(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i int, v R.Value) {}
+func BenchmarkEachMappableF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F8)
 	}
 }
 
-func BenchmarkEachSlice7(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i interface{}, v R.Value) {}
+func BenchmarkEachMappableF9(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F9)
 	}
 }
 
-func BenchmarkEachSlice8(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v R.Value) {}
+func BenchmarkEachMappableF10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F10)
 	}
 }
 
-func BenchmarkEachSlice9(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...R.Value) {}
+func BenchmarkEachMappableF11(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F11)
 	}
 }
 
-func BenchmarkEachSlice10(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v ...int) {}
+func BenchmarkEachMappableF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MM, F12)
 	}
 }
 
-func BenchmarkEachSlice11(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(v int) {}
+func BenchmarkEachMappableF13(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MSM, F13)
 	}
 }
 
-func BenchmarkEachSlice12(b *testing.B) {
-	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	F := func(i, v int) {}
+func BenchmarkEachMappableF14(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(S, F)
+		Each(MSM, F14)
 	}
 }
 
-func BenchmarkEachMap1(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v interface{}) {}
+func BenchmarkEachSliceF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F1)
 	}
 }
 
-func BenchmarkEachMap2(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i int, v interface{}) {}
+func BenchmarkEachSliceF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F2)
 	}
 }
 
-func BenchmarkEachMap3(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v interface{}) {}
+func BenchmarkEachSliceF3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F3)
 	}
 }
 
-func BenchmarkEachMap4(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...interface{}) {}
+func BenchmarkEachSliceF4(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F4)
 	}
 }
 
-func BenchmarkEachMap5(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v R.Value) {}
+func BenchmarkEachSliceF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F5)
 	}
 }
 
-func BenchmarkEachMap6(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i int, v R.Value) {}
+func BenchmarkEachSliceF6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F6)
 	}
 }
 
-func BenchmarkEachMap7(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i interface{}, v R.Value) {}
+func BenchmarkEachSliceF7(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F7)
 	}
 }
 
-func BenchmarkEachMap8(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v R.Value) {}
+func BenchmarkEachSliceF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F8)
 	}
 }
 
-func BenchmarkEachMap9(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...R.Value) {}
+func BenchmarkEachSliceF9(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F9)
 	}
 }
 
-func BenchmarkEachMap10(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v ...int) {}
+func BenchmarkEachSliceF10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F10)
 	}
 }
 
-func BenchmarkEachMap11(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(v int) {}
+func BenchmarkEachSliceF11(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F11)
 	}
 }
 
-func BenchmarkEachMap12(b *testing.B) {
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	F := func(i, v int) {}
+func BenchmarkEachSliceF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(IS, F12)
 	}
 }
 
-func BenchmarkEachMap13(b *testing.B) {
-	M := map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
-	F := func(s string, v interface{}) {}
+func BenchmarkEachMapF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(MII, F1)
 	}
 }
 
-func BenchmarkEachMap14(b *testing.B) {
-	M := map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
-	F := func(s string, v R.Value) {}
+func BenchmarkEachMapF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(M, F)
+		Each(MII, F2)
+	}
+}
+
+func BenchmarkEachMapF3(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F3)
+	}
+}
+
+func BenchmarkEachMapF4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F4)
+	}
+}
+
+func BenchmarkEachMapF5(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F5)
+	}
+}
+
+func BenchmarkEachMapF6(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F6)
+	}
+}
+
+func BenchmarkEachMapF7(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F7)
+	}
+}
+
+func BenchmarkEachMapF8(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F8)
+	}
+}
+
+func BenchmarkEachMapF9(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F9)
+	}
+}
+
+func BenchmarkEachMapF10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F10)
+	}
+}
+
+func BenchmarkEachMapF11(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F11)
+	}
+}
+
+func BenchmarkEachMapF12(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MII, F12)
+	}
+}
+
+func BenchmarkEachMapF13(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MSI, F13)
+	}
+}
+
+func BenchmarkEachMapF14(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(MSI, F14)
+	}
+}
+
+func BenchmarkEachChannelF1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F1)
+	}
+}
+
+func BenchmarkEachChannelF2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F2)
+	}
+}
+
+func BenchmarkEachChannelF3(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F3)
+	}
+}
+
+func BenchmarkEachChannelF4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F4)
+	}
+}
+
+func BenchmarkEachChannelF5(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F5)
+	}
+}
+
+func BenchmarkEachChannelF6(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F6)
+	}
+}
+
+func BenchmarkEachChannelF7(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F7)
+	}
+}
+
+func BenchmarkEachChannelF8(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F8)
+	}
+}
+
+func BenchmarkEachChannelF9(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F9)
+	}
+}
+
+func BenchmarkEachChannelF10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F10)
+	}
+}
+
+func BenchmarkEachChannelF11(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F11)
+	}
+}
+
+func BenchmarkEachChannelF12(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(CI, F12)
 	}
 }
