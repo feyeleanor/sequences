@@ -5,6 +5,7 @@ TARG=sequences
 GOFILES=\
 	sequences.go\
 	length.go\
+	indexable.go\
 	each.go\
 	while.go\
 	predicates.go\

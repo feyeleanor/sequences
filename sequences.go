@@ -1,6 +1,6 @@
 package sequences
 
-import "reflect"
+import R "reflect"
 
 type Measurable interface {
 	Len() int
@@ -8,10 +8,6 @@ type Measurable interface {
 
 type Confined interface {
 	Cap() int
-}
-
-type Indexable interface {
-	AtOffset(index int) interface{}
 }
 
 type Mappable interface {
@@ -28,11 +24,11 @@ func Each(container, f interface{}) (ok bool) {
 	case Iterable:			ok = container.Each(f)
 	case Indexable:			ok = eachIndexable(container, f)
 	case Mappable:			ok = eachMappable(container, f)
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		ok = eachSlice(c, f)
-							case reflect.Map:		ok = eachMap(c, f)
-							case reflect.Chan:		ok = eachChannel(c, f)
-							case reflect.Func:		ok = eachFunction(c, f)
+	default:				switch c := R.ValueOf(container); c.Kind() {
+							case R.Slice:		ok = eachSlice(c, f)
+							case R.Map:			ok = eachMap(c, f)
+							case R.Chan:		ok = eachChannel(c, f)
+							case R.Func:		ok = eachFunction(c, f)
 							}
 	}
 	return
@@ -64,10 +60,10 @@ func While(container, f interface{}) (count int) {
 	switch container := container.(type) {
 	case PartiallyIterable:	count = container.While(true, f)
 	case Indexable:			count = whileIndexable(container, true, f)
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		count = whileSlice(c, true, f)
-//							case reflect.Chan:		count = whileChannel(c, true, f)
-//							case reflect.Func:		count = whileFunction(c, true, f)
+	default:				switch c := R.ValueOf(container); c.Kind() {
+							case R.Slice:		count = whileSlice(c, true, f)
+//							case R.Chan:		count = whileChannel(c, true, f)
+//							case R.Func:		count = whileFunction(c, true, f)
 							}
 	}
 	return
@@ -77,10 +73,10 @@ func Until(container, f interface{}) (count int) {
 	switch container := container.(type) {
 	case PartiallyIterable:	count = container.While(false, f)
 	case Indexable:			count = whileIndexable(container, false, f)
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		count = whileSlice(c, false, f)
-//							case reflect.Chan:		count = whileChannel(c, false, f)
-//							case reflect.Func:		count = whileFunction(c, false, f)
+	default:				switch c := R.ValueOf(container); c.Kind() {
+							case R.Slice:		count = whileSlice(c, false, f)
+//							case R.Chan:		count = whileChannel(c, false, f)
+//							case R.Func:		count = whileFunction(c, false, f)
 							}
 	}
 	return
@@ -97,12 +93,12 @@ func Reduce(container, seed interface{}, f interface{}) (r interface{}, ok bool)
 	case Indexable:				r, ok = reduceIndexable(c, seed, f)
 	case Mappable:				r, ok = reduceMappable(c, seed, f)
 	case Iterable:				r, ok = reduceIterable(c, seed, f)
-	default:					switch c := reflect.ValueOf(container); c.Kind() {
-								case reflect.Invalid:	r, ok = seed, false
-								case reflect.Slice:		r, ok = reduceSlice(c, seed, f)
-								case reflect.Map:		r, ok = reduceMap(c, seed, f)
-								case reflect.Chan:		r, ok = reduceChan(c, seed, f)
-								case reflect.Func:		r, ok = reduceFunction(c, seed, f)
+	default:					switch c := R.ValueOf(container); c.Kind() {
+								case R.Invalid:	r, ok = seed, false
+								case R.Slice:		r, ok = reduceSlice(c, seed, f)
+								case R.Map:			r, ok = reduceMap(c, seed, f)
+								case R.Chan:		r, ok = reduceChan(c, seed, f)
+								case R.Func:		r, ok = reduceFunction(c, seed, f)
 								}
 	}
 	return
