@@ -20,6 +20,13 @@ var (
 		}()
 		return
 	}
+	FI = func(i int) (r int, finished bool) {
+		r = i
+		if i == 10 {
+			finished = true
+		}
+		return
+	}
 
 	F1 = func(v interface{}) {}
 	F2 = func(i int, v interface{}) {}
@@ -517,5 +524,77 @@ func BenchmarkEachChannelF11(b *testing.B) {
 func BenchmarkEachChannelF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(CI, F12)
+	}
+}
+
+func BenchmarkEachFunctionF1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F1)
+	}
+}
+
+func BenchmarkEachFunctionF2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F2)
+	}
+}
+
+func BenchmarkEachFunctionF3(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F3)
+	}
+}
+
+func BenchmarkEachFunctionF4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F4)
+	}
+}
+
+func BenchmarkEachFunctionF5(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F5)
+	}
+}
+
+func BenchmarkEachFunctionF6(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F6)
+	}
+}
+
+func BenchmarkEachFunctionF7(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F7)
+	}
+}
+
+func BenchmarkEachFunctionF8(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F8)
+	}
+}
+
+func BenchmarkEachFunctionF9(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F9)
+	}
+}
+
+func BenchmarkEachFunctionF10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F10)
+	}
+}
+
+func BenchmarkEachFunctionF11(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F11)
+	}
+}
+
+func BenchmarkEachFunctionF12(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(FI, F12)
 	}
 }

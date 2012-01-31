@@ -2,9 +2,669 @@ package sequences
 
 import(
 	R "reflect"
-	"strconv"
+//	"strconv"
 	"testing"
 )
+
+func TestEachPrimitive(t *testing.T) {
+	var count	int
+
+	ConfirmEach := func(s, f interface{}) {
+		count = 0
+		switch {
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != Len(s):	t.Fatalf("total iterations should be %v but are %v", Len(s), count)
+		}
+	}
+
+	ConfirmVariadicEach := func(s, f interface{}) {
+		count = 0
+		switch {
+		case !Each(s, f):		t.Logf("failed to perform iteration %v over %v", f, s)
+		case count != 1:		t.Fatalf("total iterations should be 1 but are %v", count)
+		}
+	}
+
+	ConfirmEachBuiltin := func(s interface{}) {
+		ConfirmEach(s, func(v interface{}) {
+			if v != AtOffset(s, count) {
+				panic(s)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v interface{}) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v interface{}) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v != AtOffset(s, count):		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...interface{}) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v R.Value) {
+			if v.Interface() != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v R.Value) {
+			switch {
+			case i != count:						t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != AtOffset(s, i):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k interface{}, v R.Value) {
+			switch {
+			case k != count:							t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != AtOffset(s, count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v R.Value) {
+			switch {
+			case k.Interface() != count:				t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != AtOffset(s, count):	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...R.Value) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+	}
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...bool) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v bool) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v bool) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]bool{true, false, false, true, true})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...complex64) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v complex64) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v complex64) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]complex64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...complex128) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v complex128) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v complex128) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]complex128{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...error) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v error) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v error) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]Error{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...float32) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v float32) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v float32) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...float64) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v float64) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v float64) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i, v int) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int8) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int8) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v int8) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]int8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int16) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int16) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v int16) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]int16{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int32) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int32) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v int32) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]int32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int64) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int64) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v int64) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	ConfirmEachBuiltin([]interface{}{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...string) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v string) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v string) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]string{"A", "B", "C", "D", "E", "F"})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uint) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uint) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uint) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uint{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uint8) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uint8) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uint8) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uint16) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uint16) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uint16) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uint16{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uint32) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uint32) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uint32) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uint32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uint64) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uint64) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uint64) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uint64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...uintptr) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v uintptr) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v uintptr) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}([]uintptr{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+	func(s []R.Value) {
+		ConfirmEach(s, func(v interface{}) {
+			if v != s[count].Interface() {
+				panic(s)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v interface{}) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != s[i].Interface():			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v interface{}) {
+			switch {
+			case k != count:					t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v != s[count].Interface():		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...interface{}) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v R.Value) {
+			if v.Interface() != s[count].Interface() {
+				t.Fatalf("element %v erroneously reported as %v", count, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i int, v R.Value) {
+			switch {
+			case i != count:							t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != s[i].Interface():		t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k interface{}, v R.Value) {
+			switch {
+			case k != count:							t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s[count].Interface():	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(k, v R.Value) {
+			switch {
+			case k.Interface() != count:				t.Fatalf("index %v erroneously reported as %v", count, k)
+			case v.Interface() != s[count].Interface():	t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(s, func(v ...R.Value) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+	}([]R.Value{R.ValueOf(0), R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4), R.ValueOf(5), R.ValueOf(6), R.ValueOf(7), R.ValueOf(8), R.ValueOf(9)})
+
+	func(s interface{}) {
+		ConfirmEachBuiltin(s)
+		ConfirmVariadicEach(s, func(v ...int) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != Len(s):				t.Fatalf("variadic slice %v erroneously passed as %v", s, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(v int) {
+			if v != AtOffset(s, count) {
+				t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(s, func(i, v int) {
+			switch {
+			case i != count:					t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != AtOffset(s, i):			t.Fatalf("element %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+	}(R.ValueOf([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}))
+}
 
 func TestEachIterable(t *testing.T) {
 	var count	int
@@ -557,7 +1217,7 @@ func TestEachChannel(t *testing.T) {
 		index = 0
 		switch {
 		case !Each(Generate(s), f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
-		case count != len(s):			t.Fatalf("total itmes produced should be %v but are %v", len(s), count)
+		case count != len(s):			t.Fatalf("total items produced should be %v but are %v", len(s), count)
 		case index != len(s):			t.Fatalf("total iterations should be %v but are %v", len(s), index)
 		}
 	}
@@ -668,109 +1328,143 @@ func TestEachChannel(t *testing.T) {
 }
 
 func TestEachFunction(t *testing.T) {
-	F1 := func(v interface{}) (r interface{}, ok bool) {
-		if v.(int) < 10 {
-			r = v
-			ok = true
-		}
-		return
-	}
-
+	limit := 10
 	count := 0
-	Each(F1, func(v interface{}) {
-		if v != count {
-			t.Fatalf("index %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+	value := 0
 
-	Each(F1, func(i interface{}, v interface{}) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
+	ConfirmEach := func(F, f interface{}) {
+		count = 0
+		value = 0
+		switch {
+		case !Each(F, f):			t.Fatalf("failed to perform iteration %v over %v", f, F)
+		case value != limit:		//t.Fatalf("total items produced should be %v but are %v", limit, value)
+									panic(count)
+		case count != limit:		t.Fatalf("total iterations should be %v but are %v", limit, count)
 		}
-	})
-
-	Each(F1, func(i int, v interface{}) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-	})
-
-	F2 := func(v int) (r int, ok bool) {
-		if v < 10 {
-			r = v
-			ok = true
-		}
-		return
 	}
 
-	count = 0
-	Each(F2, func(v int) {
-		if v != count {
-			t.Fatalf("index %v erroneously reported as %v", count, v)
+	ConfirmVariadicEach := func(F, f interface{}) {
+		count = 0
+		value = 0
+		switch {
+		case !Each(F, f):			t.Fatalf("failed to perform iteration %v over %v", f, F)
+		case value != limit:		t.Fatalf("total items produced should be %v but are %v", limit, value)
+		case count != 1:			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
-		count++
-	})
+	}
 
-	count = 0
-	Each(F2, func(v interface{}) {
-		if v != count {
-			t.Fatalf("index %v erroneously reported as %v", count, v)
-		}
-		count++
-	})
+	ConfirmEachFunction := func(F interface{}) {
+		ConfirmEach(F, func(v interface{}) {
+			if v != count {
+				t.Fatalf("value %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
 
-	Each(F2, func(i interface{}, v int) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-	})
+		ConfirmEach(F, func(i int, v interface{}) {
+			switch {
+			case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != i:				t.Fatalf("value %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
 
-	Each(F2, func(i int, v interface{}) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-	})
+		ConfirmEach(F, func(i, v interface{}) {
+			switch {
+			case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != i:				t.Fatalf("value %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
 
-	Each(F2, func(i int, v int) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-	})
+		ConfirmVariadicEach(F, func(v ...interface{}) {
+			switch {
+			case count != 0:			t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != limit:		t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
+			}
+			count++
+		})
 
-	F3 := func(v int) (r string, ok bool) {
-		if v < 10 {
-			r = strconv.Itoa(v)
-			ok = true
+		ConfirmEach(F, func(v R.Value) {
+			if v.Interface() != count {
+				t.Fatalf("value %v erroneously reported as %v", count, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(F, func(i int, v R.Value) {
+			switch {
+			case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != i:		t.Fatalf("value %v erroneously reported as %v", i, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(F, func(i interface{}, v R.Value) {
+			switch {
+			case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v.Interface() != i:	t.Fatalf("value %v erroneously reported as %v", i, v.Interface())
+			}
+			count++
+		})
+
+		ConfirmEach(F, func(i, v R.Value) {
+			switch {
+			case i.Interface() != count:			t.Fatalf("index %v erroneously reported as %v", count, i.Interface())
+			case v.Interface() != i.Interface():	t.Fatalf("value %v erroneously reported as %v", i.Interface(), v.Interface())
+			}
+			count++
+		})
+
+		ConfirmVariadicEach(F, func(v ...R.Value) {
+			switch {
+			case count != 0:					t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != limit:				t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
+			}
+			count++
+		})
+	}
+
+	ConfirmEachIntFunction := func(F interface{}) {
+		ConfirmEachFunction(F)
+
+		ConfirmVariadicEach(F, func(v ...int) {
+			switch {
+			case count != 0:			t.Fatalf("variadic function erroneously called %v times", count)
+			case len(v) != limit:		t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
+			}
+			count++
+		})
+
+		ConfirmEach(F, func(v int) {
+			if v != count {
+				t.Fatalf("value %v erroneously reported as %v", count, v)
+			}
+			count++
+		})
+
+		ConfirmEach(F, func(i, v int) {
+			switch {
+			case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+			case v != i:				t.Fatalf("value %v erroneously reported as %v", i, v)
+			}
+			count++
+		})
+	}
+
+	ConfirmEachFunction(func() (r interface{}, finished bool) {
+		r = value
+		if finished = value > 9; !finished {
+			value++
 		}
 		return
-	}
-	
-	count = 0
-	Each(F3, func(v string) {
-		if v != strconv.Itoa(count) {
-			t.Fatalf("index %v erroneously reported as %v", count, v)
-		}
-		count++
 	})
 
-	count = 0
-	Each(F3, func(v interface{}) {
-		if v != strconv.Itoa(count) {
-			t.Fatalf("index %v erroneously reported as %v", count, v)
+	ConfirmEachIntFunction(func() (r int, finished bool) {
+		r = value
+		if finished = value > 9; !finished {
+			value++
 		}
-		count++
-	})
-	
-	Each(F3, func(i interface{}, v string) {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-	})
-
-	Each(F3, func(i int, v string) {
-		if strconv.Itoa(i) != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
+		return
 	})
 }

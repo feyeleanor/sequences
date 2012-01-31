@@ -2,6 +2,884 @@ package sequences
 
 import R "reflect"
 
+func eachBool(container []bool, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(bool):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, bool):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...bool):						f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachComplex64(container []complex64, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(complex64):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, complex64):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...complex64):				f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachComplex128(container []complex128, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(complex128):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, complex128):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...complex128):				f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachError(container []error, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(error):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, error):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...error):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachFloat32(container []float32, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(float32):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, float32):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...float32):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachFloat64(container []float64, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(float64):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, float64):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...float64):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInt(container []int, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(int):							for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, int):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...int):						f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInt8(container []int8, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(int8):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, int8):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...int8):						f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInt16(container []int16, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(int16):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, int16):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...int16):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInt32(container []int32, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(int32):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, int32):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...int32):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInt64(container []int64, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(int64):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, int64):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...int64):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachInterface(container []interface{}, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				f(container...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachString(container []string, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(string):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, string):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...string):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUint(container []uint, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uint):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uint):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uint):						f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUint8(container []uint8, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uint8):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uint8):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uint8):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUint16(container []uint16, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uint16):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uint16):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uint16):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUint32(container []uint32, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uint32):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uint32):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uint32):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUint64(container []uint64, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uint64):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uint64):					for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uint64):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachUintptr(container []uintptr, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(uintptr):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, uintptr):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...uintptr):					f(container...)
+											ok = true
+
+	case func(interface{}):					for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(R.ValueOf(v)) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, R.ValueOf(v)) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), R.ValueOf(v)) }
+											ok = true
+
+	case func(...R.Value):					s := make([]R.Value, len(container), len(container))
+											for i, v := range container { s[i] = R.ValueOf(v) }
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+func eachRValueSlice(container []R.Value, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(interface{}):					for _, v := range container { f(v.Interface()) }
+											ok = true
+
+	case func(int, interface{}):			for i, v := range container { f(i, v.Interface()) }
+											ok = true
+
+	case func(interface{}, interface{}):	for i, v := range container { f(i, v.Interface()) }
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, len(container), len(container))
+											for i, v := range container { s[i] = v.Interface() }
+											f(s...)
+											ok = true
+
+	case func(R.Value):						for _, v := range container { f(v) }
+											ok = true
+
+	case func(int, R.Value):				for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(interface{}, R.Value):		for i, v := range container { f(i, v) }
+											ok = true
+
+	case func(R.Value, R.Value):			for i, v := range container { f(R.ValueOf(i), v) }
+											ok = true
+
+	case func(...R.Value):					f(container...)
+											ok = true
+	}
+	return
+}
+
 func eachIndexable(container Indexable, f interface{}) (ok bool) {
 	end := Len(container)
 	switch f := f.(type) {
@@ -597,7 +1475,7 @@ func eachFunction(g R.Value, f interface{}) (ok bool) {
 
 						case func(interface{}, interface{}):	i := 0
 																p := []R.Value{ R.ValueOf(0) }
-																for v := g.Call(p); !v[0].IsNil(); v = g.Call(p) {
+																for v := g.Call(p); !v[0].IsValid(); v = g.Call(p) {
 																	f(i, v[0].Interface())
 																	i++
 																	p[0] = R.ValueOf(i)

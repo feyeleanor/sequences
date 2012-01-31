@@ -1,5 +1,15 @@
 package sequences
 
+import "fmt"
+
+
+type Error int
+
+func (e Error) Error() string {
+	return fmt.Sprintf("Error Code: %v\n", e)
+}
+
+
 type iterable_slice []interface{}
 
 func (s iterable_slice) Each(f interface{}) (ok bool) {
