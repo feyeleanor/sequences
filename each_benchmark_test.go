@@ -8,6 +8,7 @@ var (
 	MM = mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
 	MSM = mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
 	SI = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	SUDT = []UDT{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	MII = map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
 	MSI = map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
 	CI = func() (c chan int) {
@@ -38,12 +39,14 @@ var (
 	F8 = func(i, v R.Value) {}
 	F9 = func(v ...R.Value) {}
 	F10 = func(v ...int) {}
+	F10u = func(v ...UDT) {}
 	F11 = func(v int) {}
+	F11u = func(v UDT) {}
 	F12 = func(i, v int) {}
+	F12u = func(i int, v UDT) {}
 	F13 = func(s string, v interface{}) {}
 	F14 = func(s string, v R.Value) {}
 )
-
 
 func BenchmarkRangeSliceF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
@@ -140,6 +143,78 @@ func BenchmarkRangeSliceF12(b *testing.B) {
 		for i, v := range SI {
 			F12(i, v)
 		}
+	}
+}
+
+func BenchmarkEachBuiltingF1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F1)
+	}
+}
+
+func BenchmarkEachBuiltingF2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F2)
+	}
+}
+
+func BenchmarkEachBuiltingF3(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F3)
+	}
+}
+
+func BenchmarkEachBuiltingF4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F4)
+	}
+}
+
+func BenchmarkEachBuiltingF5(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F5)
+	}
+}
+
+func BenchmarkEachBuiltingF6(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F6)
+	}
+}
+
+func BenchmarkEachBuiltingF7(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F7)
+	}
+}
+
+func BenchmarkEachBuiltingF8(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F8)
+	}
+}
+
+func BenchmarkEachBuiltingF9(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F9)
+	}
+}
+
+func BenchmarkEachBuiltingF10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F10)
+	}
+}
+
+func BenchmarkEachBuiltingF11(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F11)
+	}
+}
+
+func BenchmarkEachBuiltingF12(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Each(IS, F12)
 	}
 }
 
@@ -301,73 +376,73 @@ func BenchmarkEachMappableF14(b *testing.B) {
 
 func BenchmarkEachSliceF1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F1)
+		Each(SUDT, F1)
 	}
 }
 
 func BenchmarkEachSliceF2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F2)
+		Each(SUDT, F2)
 	}
 }
 
 func BenchmarkEachSliceF3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F3)
+		Each(SUDT, F3)
 	}
 }
 
 func BenchmarkEachSliceF4(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F4)
+		Each(SUDT, F4)
 	}
 }
 
 func BenchmarkEachSliceF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F5)
+		Each(SUDT, F5)
 	}
 }
 
 func BenchmarkEachSliceF6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F6)
+		Each(SUDT, F6)
 	}
 }
 
 func BenchmarkEachSliceF7(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F7)
+		Each(SUDT, F7)
 	}
 }
 
 func BenchmarkEachSliceF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F8)
+		Each(SUDT, F8)
 	}
 }
 
 func BenchmarkEachSliceF9(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F9)
+		Each(SUDT, F9)
 	}
 }
 
 func BenchmarkEachSliceF10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F10)
+		Each(SUDT, F10u)
 	}
 }
 
 func BenchmarkEachSliceF11(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F11)
+		Each(SUDT, F11u)
 	}
 }
 
 func BenchmarkEachSliceF12(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Each(IS, F12)
+		Each(SUDT, F12u)
 	}
 }
 

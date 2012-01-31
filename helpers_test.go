@@ -2,6 +2,7 @@ package sequences
 
 import "fmt"
 
+type UDT int
 
 type Error int
 
