@@ -11,6 +11,66 @@ func (e Error) Error() string {
 }
 
 
+type enumerable_slice []interface{}
+
+func (s enumerable_slice) Step(step int, f interface{}) (ok bool) {
+	var offset	int
+	var steps	int
+
+	switch l := len(s); {
+	case step == 0:		return
+	case step > l:		return
+	case step == 1:		switch f := f.(type) {
+						case func(interface{}):					for _, v := range s { f(v) }
+																ok = true
+
+						case func(int, interface{}):			for i, v := range s { f(i, v) }
+																ok = true
+
+						case func(interface{}, interface{}):	for i, v := range s { f(i, v) }
+																ok = true
+
+						case func(...interface{}):				f(s...)
+																ok = true
+						}
+						return
+	case step > 1:		steps = l / step
+						offset = -1
+	case step < 0:		steps = -steps
+						offset = l
+	}
+
+	switch f := f.(type) {
+	case func(interface{}):					for ; steps > 0; steps-- {
+												offset = offset + step
+												f(s[offset])
+											}
+											ok = true
+
+	case func(int, interface{}):			for ; steps > 0; steps-- {
+												offset = offset + step
+												f(offset, s[offset])
+											}
+											ok = true
+
+	case func(interface{}, interface{}):	for ; steps > 0; steps-- {
+												offset = offset + step
+												f(offset, s[offset])
+											}
+											ok = true
+
+	case func(...interface{}):				s := make([]interface{}, 0, steps)
+											for ; steps > 0; steps-- {
+												offset = offset + step
+												s = append(s, s[offset])
+											}
+											f(s...)
+											ok = true
+	}
+	return
+}
+
+
 type iterable_slice []interface{}
 
 func (s iterable_slice) Each(f interface{}) (ok bool) {
