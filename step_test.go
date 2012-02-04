@@ -28,17 +28,15 @@ func TestStepPrimitive(t *testing.T) {
 
 	ConfirmStep := func(s interface{}, inc int, f interface{}) {
 		count = 0
-		switch {
-		case !Step(s, inc, f):			t.Fatalf("%T increment %v: failed to perform iteration %v", s, inc, f)
-		case count != Sublen(s, inc):	t.Fatalf("%T increment %v: total iterations should be %v but are %v", s, inc, Sublen(s, inc), count)
+		if count := Step(s, inc, f); count != Sublen(s, inc) {
+			t.Fatalf("%T increment %v: total iterations should be %v but are %v", s, inc, Sublen(s, inc), count)
 		}
 	}
 
 	ConfirmVariadicStep := func(s interface{}, inc int, f interface{}) {
 		count = 0
-		switch {
-		case !Step(s, inc, f):		t.Logf("%T increment %v: failed to perform iteration %v", s, inc, f)
-		case count != 1:			t.Fatalf("%T increment %v: total iterations should be 1 but are %v", s, inc, count)
+		if count := Step(s, inc, f); count != 1 {
+			t.Fatalf("%T increment %v: total iterations should be 1 but are %v", s, inc, count)
 		}
 	}
 

@@ -16,101 +16,102 @@ type Mappable interface {
 }
 
 type Enumerable interface {
-	Step(increment int, function interface{}) bool
+	Step(increment int, function interface{}) int
 }
 
 type Iterable interface {
-	Each(function interface{}) bool
+	Each(function interface{}) int
 }
 
-func Step(container interface{}, increment int, f interface{}) (ok bool) {
+func Step(container interface{}, increment int, f interface{}) (i int) {
 	switch container := container.(type) {
-	case Enumerable:		ok = container.Step(increment, f)
-	case []bool:			ok = stepBool(container, increment, f)
-	case []complex64:		ok = stepComplex64(container, increment, f)
-	case []complex128:		ok = stepComplex128(container, increment, f)
-	case []error:			ok = stepError(container, increment, f)
-	case []float32:			ok = stepFloat32(container, increment, f)
-	case []float64:			ok = stepFloat64(container, increment, f)
-	case []int:				ok = stepInt(container, increment, f)
-	case []int8:			ok = stepInt8(container, increment, f)
-	case []int16:			ok = stepInt16(container, increment, f)
-	case []int32:			ok = stepInt32(container, increment, f)
-	case []int64:			ok = stepInt64(container, increment, f)
-	case []interface{}:		ok = stepInterface(container, increment, f)
-	case []string:			ok = stepString(container, increment, f)
-	case []uint:			ok = stepUint(container, increment, f)
-	case []uint8:			ok = stepUint8(container, increment, f)
-	case []uint16:			ok = stepUint16(container, increment, f)
-	case []uint32:			ok = stepUint32(container, increment, f)
-	case []uint64:			ok = stepUint64(container, increment, f)
-	case []uintptr:			ok = stepUintptr(container, increment, f)
-	case []R.Value:			ok = stepRValueSlice(container, increment, f)
-	case Indexable:			ok = stepIndexable(container, increment, f)
+	case Enumerable:		i = container.Step(increment, f)
+	case []bool:			i = stepBool(container, increment, f)
+	case []complex64:		i = stepComplex64(container, increment, f)
+	case []complex128:		i = stepComplex128(container, increment, f)
+	case []error:			i = stepError(container, increment, f)
+	case []float32:			i = stepFloat32(container, increment, f)
+	case []float64:			i = stepFloat64(container, increment, f)
+	case []int:				i = stepInt(container, increment, f)
+	case []int8:			i = stepInt8(container, increment, f)
+	case []int16:			i = stepInt16(container, increment, f)
+	case []int32:			i = stepInt32(container, increment, f)
+	case []int64:			i = stepInt64(container, increment, f)
+	case []interface{}:		i = stepInterface(container, increment, f)
+	case []string:			i = stepString(container, increment, f)
+	case []uint:			i = stepUint(container, increment, f)
+	case []uint8:			i = stepUint8(container, increment, f)
+	case []uint16:			i = stepUint16(container, increment, f)
+	case []uint32:			i = stepUint32(container, increment, f)
+	case []uint64:			i = stepUint64(container, increment, f)
+	case []uintptr:			i = stepUintptr(container, increment, f)
+	case []R.Value:			i = stepRValueSlice(container, increment, f)
+	case Indexable:			i = stepIndexable(container, increment, f)
 	case R.Value:			switch container.Kind() {
-							case R.Slice:		ok = stepSlice(container, increment, f)
-							case R.Chan:		ok = stepChannel(container, increment, f)
-//							case R.Func:		ok = stepFunction(container, increment, f)
-							}
-//	default:				switch c := R.ValueOf(container); c.Kind() {
-//							case R.Slice:		ok = stepSlice(c, increment, f)
-//							case R.Chan:		ok = stepChannel(c, increment, f)
-//							case R.Func:		ok = stepFunction(c, increment, f)
-//							}
-	}
-	return
-}
-
-func Each(container, f interface{}) (ok bool) {
-	switch container := container.(type) {
-	case Iterable:			ok = container.Each(f)
-	case Enumerable:		ok = container.Step(1, f)
-	case []bool:			ok = stepBool(container, 1, f)
-	case []complex64:		ok = stepComplex64(container, 1, f)
-	case []complex128:		ok = stepComplex128(container, 1, f)
-	case []error:			ok = stepError(container, 1, f)
-	case []float32:			ok = stepFloat32(container, 1, f)
-	case []float64:			ok = stepFloat64(container, 1, f)
-	case []int:				ok = stepInt(container, 1, f)
-	case []int8:			ok = stepInt8(container, 1, f)
-	case []int16:			ok = stepInt16(container, 1, f)
-	case []int32:			ok = stepInt32(container, 1, f)
-	case []int64:			ok = stepInt64(container, 1, f)
-	case []interface{}:		ok = stepInterface(container, 1, f)
-	case []string:			ok = stepString(container, 1, f)
-	case []uint:			ok = stepUint(container, 1, f)
-	case []uint8:			ok = stepUint8(container, 1, f)
-	case []uint16:			ok = stepUint16(container, 1, f)
-	case []uint32:			ok = stepUint32(container, 1, f)
-	case []uint64:			ok = stepUint64(container, 1, f)
-	case []uintptr:			ok = stepUintptr(container, 1, f)
-	case []R.Value:			ok = stepRValueSlice(container, 1, f)
-	case Indexable:			ok = stepIndexable(container, 1, f)
-	case Mappable:			ok = eachMappable(container, f)
-	case R.Value:			switch container.Kind() {
-							case R.Slice:		ok = stepSlice(container, 1, f)
-							case R.Map:			ok = eachMap(container, f)
-							case R.Chan:		ok = stepChannel(container, 1, f)
-							case R.Func:		ok = stepFunction(container, 1, f)
+							case R.Slice:		i = stepSlice(container, increment, f)
+							case R.Chan:		i = stepChannel(container, increment, f)
+							case R.Func:		i = stepFunction(container, increment, f)
 							}
 	default:				switch c := R.ValueOf(container); c.Kind() {
-							case R.Slice:		ok = stepSlice(c, 1, f)
-							case R.Map:			ok = eachMap(c, f)
-							case R.Chan:		ok = stepChannel(c, 1, f)
-							case R.Func:		ok = stepFunction(c, 1, f)
+							case R.Slice:		i = stepSlice(c, increment, f)
+							case R.Chan:		i = stepChannel(c, increment, f)
+							case R.Func:		i = stepFunction(c, increment, f)
 							}
 	}
 	return
 }
 
-func Cycle(container interface{}, count int, f interface{}) (i int, ok bool) {
-	for ok = true; i < count && ok; i++ { ok = Each(container, f) }
+func Each(container, f interface{}) (i int) {
+	switch container := container.(type) {
+	case Iterable:			i = container.Each(f)
+	case Enumerable:		i = container.Step(1, f)
+	case []bool:			i = stepBool(container, 1, f)
+	case []complex64:		i = stepComplex64(container, 1, f)
+	case []complex128:		i = stepComplex128(container, 1, f)
+	case []error:			i = stepError(container, 1, f)
+	case []float32:			i = stepFloat32(container, 1, f)
+	case []float64:			i = stepFloat64(container, 1, f)
+	case []int:				i = stepInt(container, 1, f)
+	case []int8:			i = stepInt8(container, 1, f)
+	case []int16:			i = stepInt16(container, 1, f)
+	case []int32:			i = stepInt32(container, 1, f)
+	case []int64:			i = stepInt64(container, 1, f)
+	case []interface{}:		i = stepInterface(container, 1, f)
+	case []string:			i = stepString(container, 1, f)
+	case []uint:			i = stepUint(container, 1, f)
+	case []uint8:			i = stepUint8(container, 1, f)
+	case []uint16:			i = stepUint16(container, 1, f)
+	case []uint32:			i = stepUint32(container, 1, f)
+	case []uint64:			i = stepUint64(container, 1, f)
+	case []uintptr:			i = stepUintptr(container, 1, f)
+	case []R.Value:			i = stepRValueSlice(container, 1, f)
+	case Indexable:			i = stepIndexable(container, 1, f)
+	case Mappable:			i = eachMappable(container, f)
+	case R.Value:			switch container.Kind() {
+							case R.Slice:		i = stepSlice(container, 1, f)
+							case R.Map:			i = eachMap(container, f)
+							case R.Chan:		i = stepChannel(container, 1, f)
+							case R.Func:		i = stepFunction(container, 1, f)
+							}
+	default:				switch c := R.ValueOf(container); c.Kind() {
+							case R.Slice:		i = stepSlice(c, 1, f)
+							case R.Map:			i = eachMap(c, f)
+							case R.Chan:		i = stepChannel(c, 1, f)
+							case R.Func:		i = stepFunction(c, 1, f)
+							}
+	}
 	return
 }
 
-func CycleForever(container interface{}, count int, f interface{}) (i int, ok bool) {
-	for ok = true; ok; i++ { ok = Each(container, f) }
+func Cycle(container interface{}, count int, f interface{}) (i int) {
+	for ; i < count; i++ { Each(container, f) }
 	return
+}
+
+func CycleForever(container interface{}, count int, f interface{}) {
+	for {
+		Each(container, f)
+	}
 }
 
 //	f() should be an interface{} with a call to a generic function call handler
