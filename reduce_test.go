@@ -5,6 +5,7 @@ import(
 	"testing"
 )
 
+
 func TestReduce(t *testing.T) {
 	ConfirmReduce := func(o, s, r, f interface{}) {
 		if x, _ := Reduce(o, s, f); !reflect.DeepEqual(x, r) {

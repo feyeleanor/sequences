@@ -7,13 +7,18 @@ import(
 
 func TestEachPrimitive(t *testing.T) {
 	ConfirmEach := func(s, f interface{}) {
-		if count := Each(s, f); count != Len(s) {
-			t.Fatalf("total iterations should be %v but are %v", Len(s), count)
+		if count, e := Each(s, f); e != nil {
+			t.Fatalf("iteration failed with error %v", e)
+		} else if l, _ := Len(s); count != l {
+			t.Fatalf("total iterations should be %v but are %v", l, count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s, f interface{}) {
-		if count := Each(s, f); count != 1 {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -180,13 +185,19 @@ func TestEachPrimitive(t *testing.T) {
 
 func TestEachIterable(t *testing.T) {
 	ConfirmEach := func(s iterable_slice, f interface{}) {
-		if count := Each(s, f); count != len(s) {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("iteration failed with error %v", e)
+		case count != len(s):
 			t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s iterable_slice, f interface{}) {
-		if count := Each(s, f); count != 1 {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -205,13 +216,19 @@ func TestEachIterable(t *testing.T) {
 
 func TestEachEnumerable(t *testing.T) {
 	ConfirmEach := func(s enumerable_slice, f interface{}) {
-		if count := Each(s, f); count != len(s) {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("iteration failed with error %v", e)
+		case count != len(s):
 			t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s enumerable_slice, f interface{}) {
-		if count := Each(s, f); count != 1 {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -230,13 +247,18 @@ func TestEachEnumerable(t *testing.T) {
 
 func TestEachIndexable(t *testing.T) {
 	ConfirmEach := func(s Indexable, f interface{}) {
-		if count := Each(s, f); count != Len(s) {
-			t.Fatalf("total iterations should be %v but are %v", Len(s), count)
+		if count, e := Each(s, f); e != nil {
+			t.Fatalf("iteration failed with error %v", e)
+		} else if l, _ := Len(s); count != l {
+			t.Fatalf("total iterations should be %v but are %v", l, count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s Indexable, f interface{}) {
-		if count := Each(s, f); count != 1 {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -258,14 +280,20 @@ func TestEachIndexable(t *testing.T) {
 }
 
 func TestEachMappable(t *testing.T) {
+	t.Fatalf("Implement support for Mappables")
 	ConfirmEach := func(m Mappable, f interface{}) {
-		if count := Each(m, f); count != Len(m) {
-			t.Fatalf("total iterations should be %v but are %v", Len(m), count)
+		if count, e := Each(m, f); e != nil {
+			t.Fatalf("iteration failed with error %v", e)
+		} else if l, _ := Len(m); count != l {
+			t.Fatalf("total iterations should be %v but are %v", l, count)
 		}
 	}
 
 	ConfirmVariadicEach := func(m Mappable, f interface{}) {
-		if count := Each(m, f); count != 1 {
+		switch count, e := Each(m, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -293,13 +321,19 @@ func TestEachMappable(t *testing.T) {
 
 func TestEachSlice(t *testing.T) {
 	ConfirmEach := func(s []int, f interface{}) {
-		if count := Each(s, f); count != len(s) {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("iteration failed with error %v", e)
+		case count != len(s):
 			t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s []int, f interface{}) {
-		if count := Each(s, f); count != 1 {
+		switch count, e := Each(s, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -322,14 +356,20 @@ func TestEachSlice(t *testing.T) {
 }
 
 func TestEachMap(t *testing.T) {
+	t.Fatalf("Implement support for Maps")
 	ConfirmEach := func(m, f interface{}) {
-		if count := Each(m, f); count != Len(m) {
-			t.Fatalf("total iterations should be %v but are %v", Len(m), count)
+		if count, e := Each(m, f); e != nil {
+			t.Fatalf("iteration failed with error %v", e)
+		} else if l, _ := Len(m); count != l {
+			t.Fatalf("total iterations should be %v but are %v", l, count)
 		}
 	}
 
 	ConfirmVariadicEach := func(m, f interface{}) {
-		if count := Each(m, f); count != 1 {
+		switch count, e := Each(m, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -366,13 +406,19 @@ func TestEachChannel(t *testing.T) {
 	}
 
 	ConfirmEach := func(s []int, f interface{}) {
-		if count := Each(Generate(s), f); count != len(s) {
+		switch count, e := Each(Generate(s), f); {
+		case e != nil:
+			t.Fatalf("iteration failed with error %v", e)
+		case count != len(s):
 			t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
 	ConfirmVariadicEach := func(s []int, f interface{}) {
-		if count := Each(Generate(s), f); count != 1 {
+		switch count, e := Each(Generate(s), f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case count != 1:
 			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
@@ -397,14 +443,20 @@ func TestEachFunction(t *testing.T) {
 	value := 0
 	ConfirmEach := func(F, f interface{}) {
 		value = 0
-		if i := Each(F, f); i != limit {
+		switch i, e := Each(F, f); {
+		case e != nil:
+			t.Fatalf("iteration failed with error %v", e)
+		case i != limit:
 			t.Fatalf("total iterations should be %v but are %v", limit, i)
 		}
 	}
 
 	ConfirmVariadicEach := func(F, f interface{}) {
 		value = 0
-		if i := Each(F, f); i != 1 {
+		switch i, e := Each(F, f); {
+		case e != nil:
+			t.Fatalf("variadic iteration failed with error %v", e)
+		case i != 1:
 			t.Fatalf("total iterations should be 1 but are %v", i)
 		}
 	}

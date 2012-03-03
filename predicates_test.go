@@ -4,13 +4,19 @@ import "testing"
 
 func TestAny(t *testing.T) {
 	ConfirmAny := func(o interface{}, f func(i interface{}) bool) {
-		if !Any(o, f) {
+		switch r, e := Any(o, f); {
+		case e != nil:
+			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
+		case !r:
 			t.Fatalf("Any(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteAny := func(o interface{}, f func(i interface{}) bool) {
-		if Any(o, f) {
+		switch r, e := Any(o, f); {
+		case e != nil:
+			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
+		case r:
 			t.Fatalf("Any(%v, f) should be false but is true", o)
 		}
 	}
@@ -31,14 +37,20 @@ func TestAny(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	ConfirmAll := func(o interface{}, f func(i interface{}) bool) {
-		if !All(o, f) {
+		switch r, e := All(o, f); {
+		case e != nil:
+			t.Fatalf("All(%v, f) iteration failed with error %v", o, e)
+		case !r:
 			t.Fatalf("All(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteAll := func(o interface{}, f func(i interface{}) bool) {
-		if All(o, f) {
-			t.Fatalf("All(%v, f) should be false but is true", o)
+		switch r, e := All(o, f); {
+		case e != nil:
+			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
+		case r:
+			t.Fatalf("Any(%v, f) should be false but is true", o)
 		}
 	}
 
@@ -71,13 +83,19 @@ func TestAll(t *testing.T) {
 
 func TestNone(t *testing.T) {
 	ConfirmNone := func(o interface{}, f func(i interface{}) bool) {
-		if !None(o, f) {
+		switch r, e := None(o, f); {
+		case e != nil:
+			t.Fatalf("None(%v, f) iteration failed with error %v", o, e)
+		case !r:
 			t.Fatalf("None(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteNone := func(o interface{}, f func(i interface{}) bool) {
-		if None(o, f) {
+		switch r, e := None(o, f); {
+		case e != nil:
+			t.Fatalf("None(%v, f) iteration failed with error %v", o, e)
+		case r:
 			t.Fatalf("None(%v, f) should be false but is true", o)
 		}
 	}
@@ -111,13 +129,19 @@ func TestNone(t *testing.T) {
 
 func TestOne(t *testing.T) {
 	ConfirmOne := func(o interface{}, f func(i interface{}) bool) {
-		if !One(o, f) {
+		switch r, e := One(o, f); {
+		case e != nil:
+			t.Fatalf("One(%v, f) iteration failed with error %v", o, e)
+		case !r:
 			t.Fatalf("One(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteOne := func(o interface{}, f func(i interface{}) bool) {
-		if One(o, f) {
+		switch r, e := One(o, f); {
+		case e != nil:
+			t.Fatalf("One(%v, f) iteration failed with error %v", o, e)
+		case r:
 			t.Fatalf("One(%v, f) should be false but is true", o)
 		}
 	}
@@ -161,8 +185,11 @@ func TestDensity(t *testing.T) {
 
 	ConfirmDensity := func(o interface{}, r float64) {
 		tol := 0.0001
-		if d := Density(o, IsPositive); (d - r > tol) && (r - d < tol) {
-			t.Fatalf("Density(%v, f) should be %v with a tolerance of %v but is %v", o, r, tol, d)
+		switch d, e := Density(o, IsPositive); {
+		case e != nil:
+			t.Fatalf("Density(%v, f) iteration failed with error %v", o, e)
+		case d - r > tol && r - d < tol:
+			t.Fatalf("Density(%v, f) should be true but is false", o)
 		}
 	}
 

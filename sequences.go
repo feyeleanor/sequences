@@ -2,6 +2,11 @@ package sequences
 
 import R "reflect"
 
+const(
+	_MAXINT_ = int(^uint(0) >> 1)
+	DEFERRED_COUNT = -1
+)
+
 type Measurable interface {
 	Len() int
 }
@@ -16,95 +21,29 @@ type Mappable interface {
 }
 
 type Enumerable interface {
-	Step(increment int, function interface{}) int
+	Step(start, span, steps int, function interface{}) (int, error)
 }
 
 type Iterable interface {
-	Each(function interface{}) int
+	Each(processor interface{}) (int, error)
 }
 
-func Step(container interface{}, increment int, f interface{}) (i int) {
-	switch container := container.(type) {
-	case Enumerable:		i = container.Step(increment, f)
-	case []bool:			i = stepBool(container, increment, f)
-	case []complex64:		i = stepComplex64(container, increment, f)
-	case []complex128:		i = stepComplex128(container, increment, f)
-	case []error:			i = stepError(container, increment, f)
-	case []float32:			i = stepFloat32(container, increment, f)
-	case []float64:			i = stepFloat64(container, increment, f)
-	case []int:				i = stepInt(container, increment, f)
-	case []int8:			i = stepInt8(container, increment, f)
-	case []int16:			i = stepInt16(container, increment, f)
-	case []int32:			i = stepInt32(container, increment, f)
-	case []int64:			i = stepInt64(container, increment, f)
-	case []interface{}:		i = stepInterface(container, increment, f)
-	case []string:			i = stepString(container, increment, f)
-	case []uint:			i = stepUint(container, increment, f)
-	case []uint8:			i = stepUint8(container, increment, f)
-	case []uint16:			i = stepUint16(container, increment, f)
-	case []uint32:			i = stepUint32(container, increment, f)
-	case []uint64:			i = stepUint64(container, increment, f)
-	case []uintptr:			i = stepUintptr(container, increment, f)
-	case []R.Value:			i = stepRValueSlice(container, increment, f)
-	case Indexable:			i = stepIndexable(container, increment, f)
-	case R.Value:			switch container.Kind() {
-							case R.Slice:		i = stepSlice(container, increment, f)
-							case R.Chan:		i = stepChannel(container, increment, f)
-							case R.Func:		i = stepFunction(container, increment, f)
-							}
-	default:				switch c := R.ValueOf(container); c.Kind() {
-							case R.Slice:		i = stepSlice(c, increment, f)
-							case R.Chan:		i = stepChannel(c, increment, f)
-							case R.Func:		i = stepFunction(c, increment, f)
-							}
+func Step(seq interface{}, start, span, steps int, f interface{}) (i int, e error) {
+	enum := &Enumerator{ Sequence: seq, Bounds: Bounds{ Start: start, Span: span, Limit: steps } }
+	return enum.Each(f)
+}
+
+func Each(seq, f interface{}) (i int, e error) {
+	enum := &Enumerator{ Sequence: seq, Bounds: Bounds{ Span: 1, Limit: -1 } }
+	return enum.Each(f)
+}
+
+func Cycle(seq interface{}, count int, f interface{}) (i int, e error) {
+	enum := &Enumerator{ Sequence: seq, Bounds: Bounds{ Span: 1, Limit: -1 } }
+	enum.Bind(f)
+	for ; i < count && e == nil; i++ {
+		_, e = enum.Execute()
 	}
-	return
-}
-
-func Each(container, f interface{}) (i int) {
-	switch container := container.(type) {
-	case Iterable:			i = container.Each(f)
-	case Enumerable:		i = container.Step(1, f)
-	case []bool:			i = stepBool(container, 1, f)
-	case []complex64:		i = stepComplex64(container, 1, f)
-	case []complex128:		i = stepComplex128(container, 1, f)
-	case []error:			i = stepError(container, 1, f)
-	case []float32:			i = stepFloat32(container, 1, f)
-	case []float64:			i = stepFloat64(container, 1, f)
-	case []int:				i = stepInt(container, 1, f)
-	case []int8:			i = stepInt8(container, 1, f)
-	case []int16:			i = stepInt16(container, 1, f)
-	case []int32:			i = stepInt32(container, 1, f)
-	case []int64:			i = stepInt64(container, 1, f)
-	case []interface{}:		i = stepInterface(container, 1, f)
-	case []string:			i = stepString(container, 1, f)
-	case []uint:			i = stepUint(container, 1, f)
-	case []uint8:			i = stepUint8(container, 1, f)
-	case []uint16:			i = stepUint16(container, 1, f)
-	case []uint32:			i = stepUint32(container, 1, f)
-	case []uint64:			i = stepUint64(container, 1, f)
-	case []uintptr:			i = stepUintptr(container, 1, f)
-	case []R.Value:			i = stepRValueSlice(container, 1, f)
-	case Indexable:			i = stepIndexable(container, 1, f)
-	case Mappable:			i = eachMappable(container, f)
-	case R.Value:			switch container.Kind() {
-							case R.Slice:		i = stepSlice(container, 1, f)
-							case R.Map:			i = eachMap(container, f)
-							case R.Chan:		i = stepChannel(container, 1, f)
-							case R.Func:		i = stepFunction(container, 1, f)
-							}
-	default:				switch c := R.ValueOf(container); c.Kind() {
-							case R.Slice:		i = stepSlice(c, 1, f)
-							case R.Map:			i = eachMap(c, f)
-							case R.Chan:		i = stepChannel(c, 1, f)
-							case R.Func:		i = stepFunction(c, 1, f)
-							}
-	}
-	return
-}
-
-func Cycle(container interface{}, count int, f interface{}) (i int) {
-	for ; i < count; i++ { Each(container, f) }
 	return
 }
 
@@ -115,62 +54,86 @@ func CycleForever(container interface{}, count int, f interface{}) {
 }
 
 //	f() should be an interface{} with a call to a generic function call handler
-func Count(container interface{}, f func(interface{}) bool) (n int) {
-	Each(container, func(x interface{}) {
-		if f(x) { n++ }
+func Count(container interface{}, f func(interface{}) bool) (n int, e error) {
+	_, e = Each(container, func(x interface{}) {
+		if f(x) {
+			n++
+		}
 	})
 	return
 }
 
 
 type PartiallyIterable interface {
-	While(condition bool, function interface{}) (count int)
+	While(condition bool, function interface{}) (count int, e error)
 }
 
-func While(container, f interface{}) (count int) {
+func While(container, f interface{}) (count int, e error) {
 	switch container := container.(type) {
-	case PartiallyIterable:	count = container.While(true, f)
-	case Indexable:			count = whileIndexable(container, true, f)
-	default:				switch c := R.ValueOf(container); c.Kind() {
-							case R.Slice:		count = whileSlice(c, true, f)
-//							case R.Chan:		count = whileChannel(c, true, f)
-//							case R.Func:		count = whileFunction(c, true, f)
-							}
+	case PartiallyIterable:
+		count, e = container.While(true, f)
+	case Indexable:
+		count, e = whileIndexable(container, true, f)
+	default:
+		switch c := R.ValueOf(container); c.Kind() {
+		case R.Slice:
+			count, e = whileSlice(c, true, f)
+//		case R.Chan:
+//			count, e = whileChannel(c, true, f)
+//		case R.Func:
+//			count, e = whileFunction(c, true, f)
+		}
 	}
 	return
 }
 
-func Until(container, f interface{}) (count int) {
+func Until(container, f interface{}) (count int, e error) {
 	switch container := container.(type) {
-	case PartiallyIterable:	count = container.While(false, f)
-	case Indexable:			count = whileIndexable(container, false, f)
-	default:				switch c := R.ValueOf(container); c.Kind() {
-							case R.Slice:		count = whileSlice(c, false, f)
-//							case R.Chan:		count = whileChannel(c, false, f)
-//							case R.Func:		count = whileFunction(c, false, f)
-							}
+	case PartiallyIterable:
+		count, e = container.While(false, f)
+	case Indexable:
+		count, e = whileIndexable(container, false, f)
+	default:
+		switch c := R.ValueOf(container); c.Kind() {
+		case R.Slice:
+			count, e = whileSlice(c, false, f)
+//		case R.Chan:
+//			count, e = whileChannel(c, false, f)
+//		case R.Func:
+//			count, e = whileFunction(c, false, f)
+		}
 	}
 	return
 }
 
 
 type Reducible interface {
-	Reduce(seed, function interface{}) (r interface{}, ok bool)
+	Reduce(seed, function interface{}) (r interface{}, e error)
 }
 
-func Reduce(container, seed interface{}, f interface{}) (r interface{}, ok bool) {
+func Reduce(container, seed interface{}, f interface{}) (r interface{}, e error) {
 	switch c := container.(type) {
-	case Reducible:				r, ok = c.Reduce(seed, f)
-	case Indexable:				r, ok = reduceIndexable(c, seed, f)
-	case Mappable:				r, ok = reduceMappable(c, seed, f)
-	case Iterable:				r, ok = reduceIterable(c, seed, f)
-	default:					switch c := R.ValueOf(container); c.Kind() {
-								case R.Invalid:	r, ok = seed, false
-								case R.Slice:		r, ok = reduceSlice(c, seed, f)
-								case R.Map:			r, ok = reduceMap(c, seed, f)
-								case R.Chan:		r, ok = reduceChan(c, seed, f)
-								case R.Func:		r, ok = reduceFunction(c, seed, f)
-								}
+	case Reducible:
+		r, e = c.Reduce(seed, f)
+	case Indexable:
+		r, e = reduceIndexable(c, seed, f)
+	case Mappable:
+		r, e = reduceMappable(c, seed, f)
+	case Iterable:
+		r, e = reduceIterable(c, seed, f)
+	default:
+		switch c := R.ValueOf(container); c.Kind() {
+		case R.Invalid:
+			r, e = seed, INVALID_SEQUENCE
+		case R.Slice:
+			r, e = reduceSlice(c, seed, f)
+		case R.Map:
+			r, e = reduceMap(c, seed, f)
+		case R.Chan:
+			r, e = reduceChan(c, seed, f)
+		case R.Func:
+			r, e = reduceFunction(c, seed, f)
+		}
 	}
 	return
 }

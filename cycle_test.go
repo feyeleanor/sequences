@@ -7,7 +7,8 @@ func TestCycle(t *testing.T) {
 		for c := 1; c < 5; c++ {
 			iterations := 0
 			expected := c * l
-			switch cycles := Cycle(s, c, func(i interface{}) { iterations++ }); {
+			switch cycles, e := Cycle(s, c, func(i interface{}) { iterations++ }); {
+			case e != nil:					t.Fatalf("cycle([%T], %v): failed with error %v", s, c, e)
 			case cycles != c:				t.Fatalf("cycle([%T], %v): cycle count should be %v but is %v", s, c, c, cycles)
 			case iterations != expected:	t.Fatalf("cycle([%T], %v): iteration count should be %v but is %v", s, c, expected, iterations)
 			}
