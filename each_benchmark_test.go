@@ -32,14 +32,10 @@ var (
 	F1 = func(v interface{}) {}
 	F2 = func(i int, v interface{}) {}
 	F3 = func(i, v interface{}) {}
-	F4 = func(v ...interface{}) {}
 	F5 = func(v R.Value) {}
 	F6 = func(i int, v R.Value) {}
 	F7 = func(i interface{}, v R.Value) {}
 	F8 = func(i, v R.Value) {}
-	F9 = func(v ...R.Value) {}
-	F10 = func(v ...int) {}
-	F10u = func(v ...UDT) {}
 	F11 = func(v int) {}
 	F11u = func(v UDT) {}
 	F12 = func(i, v int) {}
@@ -72,16 +68,6 @@ func BenchmarkRangeSliceF3(b *testing.B) {
 	}
 }
 
-func BenchmarkRangeSliceF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		p := []interface{}{}
-		for _, v := range SI {
-			p = append(p, v)
-		}
-		F4(p...)
-	}
-}
-
 func BenchmarkRangeSliceF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, v := range SI {
@@ -111,22 +97,6 @@ func BenchmarkRangeSliceF8(b *testing.B) {
 		for i, v := range SI {
 			F8(R.ValueOf(i), R.ValueOf(v))
 		}
-	}
-}
-
-func BenchmarkRangeSliceF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		p := []R.Value{}
-		for _, v := range SI {
-			p = append(p, R.ValueOf(v))
-		}
-		F9(p...)
-	}
-}
-
-func BenchmarkRangeSliceF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		F10(SI...)
 	}
 }
 
@@ -164,12 +134,6 @@ func BenchmarkEachBuiltingF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachBuiltingF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F4)
-	}
-}
-
 func BenchmarkEachBuiltingF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(IS, F5)
@@ -191,18 +155,6 @@ func BenchmarkEachBuiltingF7(b *testing.B) {
 func BenchmarkEachBuiltingF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(IS, F8)
-	}
-}
-
-func BenchmarkEachBuiltingF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F9)
-	}
-}
-
-func BenchmarkEachBuiltingF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F10)
 	}
 }
 
@@ -236,12 +188,6 @@ func BenchmarkEachIndexableF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachIndexableF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F4)
-	}
-}
-
 func BenchmarkEachIndexableF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(IS, F5)
@@ -263,18 +209,6 @@ func BenchmarkEachIndexableF7(b *testing.B) {
 func BenchmarkEachIndexableF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(IS, F8)
-	}
-}
-
-func BenchmarkEachIndexableF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F9)
-	}
-}
-
-func BenchmarkEachIndexableF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(IS, F10)
 	}
 }
 
@@ -308,12 +242,6 @@ func BenchmarkEachMappableF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachMappableF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MM, F4)
-	}
-}
-
 func BenchmarkEachMappableF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(MM, F5)
@@ -335,18 +263,6 @@ func BenchmarkEachMappableF7(b *testing.B) {
 func BenchmarkEachMappableF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(MM, F8)
-	}
-}
-
-func BenchmarkEachMappableF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MM, F9)
-	}
-}
-
-func BenchmarkEachMappableF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MM, F10)
 	}
 }
 
@@ -392,12 +308,6 @@ func BenchmarkEachSliceF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachSliceF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(SUDT, F4)
-	}
-}
-
 func BenchmarkEachSliceF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(SUDT, F5)
@@ -419,18 +329,6 @@ func BenchmarkEachSliceF7(b *testing.B) {
 func BenchmarkEachSliceF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(SUDT, F8)
-	}
-}
-
-func BenchmarkEachSliceF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(SUDT, F9)
-	}
-}
-
-func BenchmarkEachSliceF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(SUDT, F10u)
 	}
 }
 
@@ -464,12 +362,6 @@ func BenchmarkEachMapF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachMapF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MII, F4)
-	}
-}
-
 func BenchmarkEachMapF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(MII, F5)
@@ -491,18 +383,6 @@ func BenchmarkEachMapF7(b *testing.B) {
 func BenchmarkEachMapF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(MII, F8)
-	}
-}
-
-func BenchmarkEachMapF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MII, F9)
-	}
-}
-
-func BenchmarkEachMapF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(MII, F10)
 	}
 }
 
@@ -548,12 +428,6 @@ func BenchmarkEachChannelF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachChannelF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(CI, F4)
-	}
-}
-
 func BenchmarkEachChannelF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(CI, F5)
@@ -575,18 +449,6 @@ func BenchmarkEachChannelF7(b *testing.B) {
 func BenchmarkEachChannelF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(CI, F8)
-	}
-}
-
-func BenchmarkEachChannelF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(CI, F9)
-	}
-}
-
-func BenchmarkEachChannelF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(CI, F10)
 	}
 }
 
@@ -620,12 +482,6 @@ func BenchmarkEachFunctionF3(b *testing.B) {
 	}
 }
 
-func BenchmarkEachFunctionF4(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(FI, F4)
-	}
-}
-
 func BenchmarkEachFunctionF5(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(FI, F5)
@@ -647,18 +503,6 @@ func BenchmarkEachFunctionF7(b *testing.B) {
 func BenchmarkEachFunctionF8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Each(FI, F8)
-	}
-}
-
-func BenchmarkEachFunctionF9(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(FI, F9)
-	}
-}
-
-func BenchmarkEachFunctionF10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Each(FI, F10)
 	}
 }
 

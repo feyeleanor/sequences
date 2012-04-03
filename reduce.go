@@ -3,8 +3,7 @@ package sequences
 import "reflect"
 
 func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, e error) {
-	var l	int
-	if l, e = Len(c); e == nil {
+	if l := Len(c); l > 0 {
 		switch f := f.(type) {
 		case func(interface{}, interface{}) interface{}:
 			for i := 0; i < l; i++ {
@@ -20,7 +19,7 @@ func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, e error) 
 						f.Call(p)
 					}
 				default:
-					e = UNKNOWN_ITERATOR
+					panic(UNHANDLED_ITERATOR)
 				}
 			}
 		}
@@ -29,10 +28,10 @@ func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, e error) 
 }
 
 func reduceMappable(c Mappable, seed, function interface{}) (r interface{}, e error) {
-	return nil, UNKNOWN_ITERATOR
+	panic(UNHANDLED_ITERATOR)
 }
 
-func reduceIterable(container Iterable, seed, f interface{}) (r interface{}, e error) {
+func reduceEnumerable(container Enumerable, seed, f interface{}) (r interface{}, e error) {
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:
 		r = seed
@@ -40,14 +39,13 @@ func reduceIterable(container Iterable, seed, f interface{}) (r interface{}, e e
 			r = f(r, x)
 		})
 	default:
-		e = UNKNOWN_ITERATOR
+		panic(UNHANDLED_ITERATOR)
 	}
 	return
 }
 
 func reduceSlice(s reflect.Value, seed, f interface{}) (r interface{}, e error) {
-	var l	int
-	if l, e = Len(s); e == nil {
+	if l := Len(s); l > 0 {
 		switch f := f.(type) {
 		case func(interface{}, interface{}) interface{}:
 			v := reflect.New(s.Type().Elem()).Elem()
@@ -67,7 +65,7 @@ func reduceSlice(s reflect.Value, seed, f interface{}) (r interface{}, e error) 
 					}
 					r = v.Interface()
 				default:
-					e = UNKNOWN_ITERATOR
+					panic(UNHANDLED_ITERATOR)
 				}
 			}
 		}
@@ -95,7 +93,7 @@ func reduceMap(m reflect.Value, seed, f interface{}) (r interface{}, e error) {
 				}
 				r = v.Interface()
 			default:
-				e = UNKNOWN_ITERATOR
+				panic(UNHANDLED_ITERATOR)
 			}
 		}
 	}
@@ -130,7 +128,7 @@ func reduceChan(c reflect.Value, seed, f interface{}) (r interface{}, e error) {
 				}
 				r = v.Interface()
 			default:
-				e = UNKNOWN_ITERATOR
+				panic(UNHANDLED_ITERATOR)
 			}
 		}
 	}
@@ -150,7 +148,7 @@ func reduceFunction(g reflect.Value, seed, f interface{}) (r interface{}, e erro
 				}
 				r = v.Interface()
 			default:
-				e = UNKNOWN_ITERATOR
+				panic(UNHANDLED_ITERATOR)
 			}
 		case 1:
 			count := 0
@@ -166,10 +164,10 @@ func reduceFunction(g reflect.Value, seed, f interface{}) (r interface{}, e erro
 				}
 				r = v.Interface()
 			default:
-				e = UNKNOWN_ITERATOR
+				panic(UNHANDLED_ITERATOR)
 			}
 		default:
-			e = UNKNOWN_ITERATOR
+			panic(UNHANDLED_ITERATOR)
 		}
 	}
 	return

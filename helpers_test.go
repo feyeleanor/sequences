@@ -1,8 +1,19 @@
 package sequences
 
-import "fmt"
+import (
+	"fmt"
+	R "reflect"
+)
 
 type UDT int
+
+func isPositive(i interface{}) bool {
+	if i, ok := i.(int); ok {
+		return i > 0
+	}
+	return false
+}
+
 
 type Error int
 
@@ -13,86 +24,47 @@ func (e Error) Error() string {
 
 type enumerable_slice []interface{}
 
-func (s enumerable_slice) Step(start, span, steps int, f interface{}) (ok bool) {
-	var offset	int
+func (s enumerable_slice) Len() int {
+	return len(s)
+}
 
-	switch l := len(s); {
-	case span == 0:
-		return
-	case span > l:
-		return
-	case span == 1:
-		switch f := f.(type) {
-		case func(interface{}):
-			for _, v := range s[start:start + steps] { f(v) }
-			ok = true
-		case func(int, interface{}):
-			for i, v := range s[start:start + steps] { f(i, v) }
-			ok = true
-		case func(interface{}, interface{}):
-			for i, v := range s[start:start + steps] { f(i, v) }
-			ok = true
-		case func(...interface{}):
-			f(s[start:start + steps]...)
-			ok = true
-		}
-		return
-	case span > 1:
-		offset = start
-	}
-
-	switch f := f.(type) {
+func (s enumerable_slice) Each(enum *Enumerator) (i int) {
+	switch f := enum.F().(type) {
 	case func(interface{}):
-		for ; steps > 0; steps-- {
-			f(s[offset])
-			offset += span
-		}
-		ok = true
+		i = enum.each(func(cursor int) {
+			f(s[cursor])
+		})
 	case func(int, interface{}):
-		for ; steps > 0; steps-- {
-			f(offset, s[offset])
-			offset += span
-		}
-		ok = true
+		i = enum.each(func(cursor int) {
+			f(cursor, s[cursor])
+		})
 	case func(interface{}, interface{}):
-		for ; steps > 0; steps-- {
-			f(offset, s[offset])
-			offset += span
-		}
-		ok = true
-	case func(...interface{}):
-		n := make([]interface{}, 0, steps)
-		for ; steps > 0; steps-- {
-			n = append(n, s[offset])
-			offset += span
-		}
-		f(s...)
-		ok = true
+		i = enum.each(func(cursor int) {
+			f(cursor, s[cursor])
+		})
+	case func(R.Value):
+		i = enum.each(func(cursor int) {
+			f(R.ValueOf(s[cursor]))
+		})
+	case func(int, R.Value):
+		i = enum.each(func(cursor int) {
+			f(cursor, R.ValueOf(s[cursor]))
+		})
+	case func(interface{}, R.Value):
+		i = enum.each(func(cursor int) {
+			f(cursor, R.ValueOf(s[cursor]))
+		})
+	case func(R.Value, R.Value):
+		i = enum.each(func(cursor int) {
+			f(R.ValueOf(cursor), R.ValueOf(s[cursor]))
+		})
 	}
 	return
 }
 
 
-type iterable_slice []interface{}
-
-func (s iterable_slice) Each(f interface{}) (ok bool) {
-	switch f := f.(type) {
-	case func(interface{}):
-		for _, v := range s { f(v) }
-		ok = true
-	case func(int, interface{}):
-		for i, v := range s { f(i, v) }
-		ok = true
-	case func(interface{}, interface{}):
-		for i, v := range s { f(i, v) }
-		ok = true
-	}
-	return
-}
-
-
-type partially_iterable_slice []interface{}
-func (s partially_iterable_slice) While(r bool, f interface{}) (count int) {
+type partially_enumerable_slice []interface{}
+func (s partially_enumerable_slice) While(r bool, f interface{}) (count int) {
 	if len(s) > 0 {
 		switch f := f.(type) {
 		case func(interface{}) bool:
@@ -140,6 +112,9 @@ func (f indexable_function) Len() int {
 }
 
 func (f indexable_function) AtOffset(x int) interface{} {
+	if x > f.Len() {
+		PanicWithIndex(x)
+	}
 	return f(x)
 }
 
@@ -156,7 +131,7 @@ func (m mappable_slice) StoredAs(key interface{}) interface{} {
 
 func (m mappable_slice) Keys() interface{} {
 	l := len(m)
-	r := make(iterable_slice, l, l)
+	r := make(enumerable_slice, l, l)
 	for i := l - 1; i > -1; i-- {
 		r[i] = i
 	}
@@ -175,7 +150,7 @@ func (m mappable_map) StoredAs(key interface{}) interface{} {
 }
 
 func (m mappable_map) Keys() interface{} {
-	r := make(iterable_slice, len(m), len(m))
+	r := make(enumerable_slice, len(m), len(m))
 	i := 0
 	for k, _ := range m {
 		r[i] = k
@@ -196,7 +171,7 @@ func (m mappable_string_map) StoredAs(key interface{}) interface{} {
 }
 
 func (m mappable_string_map) Keys() interface{} {
-	r := make(iterable_slice, len(m), len(m))
+	r := make(enumerable_slice, len(m), len(m))
 	i := 0
 	for k, _ := range m {
 		r[i] = k
@@ -217,8 +192,8 @@ func (f mappable_function) StoredAs(x interface{}) interface{} {
 }
 
 func (m mappable_function) Keys() (r interface{}) {
-	if l, e := Len(m); e == nil {
-		s := make(iterable_slice, l, l)
+	if l := Len(m); l > 0 {
+		s := make(enumerable_slice, l, l)
 		for i := l - 1; i > -1; i-- {
 			s[i] = i
 		}

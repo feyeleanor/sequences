@@ -3,176 +3,156 @@ package sequences
 import "testing"
 
 func TestAny(t *testing.T) {
-	ConfirmAny := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := Any(o, f); {
-		case e != nil:
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
 			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
-		case !r:
+		}
+	}
+
+	ConfirmAny := func(o interface{}, f func(i interface{}) bool) {
+		defer reportIterationError(o)
+		if !Any(o, f) {
 			t.Fatalf("Any(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteAny := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := Any(o, f); {
-		case e != nil:
-			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
-		case r:
+		defer reportIterationError(o)
+		if Any(o, f) {
 			t.Fatalf("Any(%v, f) should be false but is true", o)
 		}
 	}
 
-	IsPositive := func(i interface{}) bool {
-		if i, ok := i.(int); ok {
-			return i > 0
-		}
-		return false
-	}
-
-	RefuteAny(nil, IsPositive)
-	RefuteAny([]int{}, IsPositive)
-	RefuteAny([]int{0}, IsPositive)
-	ConfirmAny([]int{0, 1}, IsPositive)
-	ConfirmAny([]int{0, 0, 1}, IsPositive)
+	RefuteAny(nil, isPositive)
+	RefuteAny([]int{}, isPositive)
+	RefuteAny([]int{0}, isPositive)
+	ConfirmAny([]int{0, 1}, isPositive)
+	ConfirmAny([]int{0, 0, 1}, isPositive)
 }
 
 func TestAll(t *testing.T) {
-	ConfirmAll := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := All(o, f); {
-		case e != nil:
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
 			t.Fatalf("All(%v, f) iteration failed with error %v", o, e)
-		case !r:
+		}
+	}
+
+	ConfirmAll := func(o interface{}, f func(i interface{}) bool) {
+		defer reportIterationError(o)
+		if !All(o, f) {
 			t.Fatalf("All(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteAll := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := All(o, f); {
-		case e != nil:
-			t.Fatalf("Any(%v, f) iteration failed with error %v", o, e)
-		case r:
+		defer reportIterationError(o)
+		if All(o, f) {
 			t.Fatalf("Any(%v, f) should be false but is true", o)
 		}
 	}
 
-	IsPositive := func(i interface{}) bool {
-		if i, ok := i.(int); ok {
-			return i > 0
-		}
-		return false
-	}
+	RefuteAll(nil, isPositive)
+	RefuteAll([]int{}, isPositive)
+	RefuteAll([]int{0}, isPositive)
+	RefuteAll([]int{0, 1}, isPositive)
+	RefuteAll([]int{0, 0, 1}, isPositive)
 
-	RefuteAll(nil, IsPositive)
-	RefuteAll([]int{}, IsPositive)
-	RefuteAll([]int{0}, IsPositive)
-	RefuteAll([]int{0, 1}, IsPositive)
-	RefuteAll([]int{0, 0, 1}, IsPositive)
+	ConfirmAll([]int{1}, isPositive)
+	ConfirmAll([]int{1, 1}, isPositive)
+	ConfirmAll([]int{1, 1, 1}, isPositive)
 
-	ConfirmAll([]int{1}, IsPositive)
-	ConfirmAll([]int{1, 1}, IsPositive)
-	ConfirmAll([]int{1, 1, 1}, IsPositive)
+	RefuteAll([]interface{}{}, isPositive)
+	RefuteAll([]interface{}{0}, isPositive)
+	RefuteAll([]interface{}{0, 1}, isPositive)
+	RefuteAll([]interface{}{0, 0, 1}, isPositive)
 
-	RefuteAll([]interface{}{}, IsPositive)
-	RefuteAll([]interface{}{0}, IsPositive)
-	RefuteAll([]interface{}{0, 1}, IsPositive)
-	RefuteAll([]interface{}{0, 0, 1}, IsPositive)
-
-	ConfirmAll([]interface{}{1}, IsPositive)
-	ConfirmAll([]interface{}{1, 1}, IsPositive)
-	ConfirmAll([]interface{}{1, 1, 1}, IsPositive)
+	ConfirmAll([]interface{}{1}, isPositive)
+	ConfirmAll([]interface{}{1, 1}, isPositive)
+	ConfirmAll([]interface{}{1, 1, 1}, isPositive)
 }
 
 func TestNone(t *testing.T) {
-	ConfirmNone := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := None(o, f); {
-		case e != nil:
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
 			t.Fatalf("None(%v, f) iteration failed with error %v", o, e)
-		case !r:
+		}
+	}
+	
+	ConfirmNone := func(o interface{}, f func(i interface{}) bool) {
+		defer reportIterationError(o)
+		if !None(o, f) {
 			t.Fatalf("None(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteNone := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := None(o, f); {
-		case e != nil:
-			t.Fatalf("None(%v, f) iteration failed with error %v", o, e)
-		case r:
+		defer reportIterationError(o)
+		if None(o, f) {
 			t.Fatalf("None(%v, f) should be false but is true", o)
 		}
 	}
 
-	IsPositive := func(i interface{}) bool {
-		if i, ok := i.(int); ok {
-			return i > 0
-		}
-		return false
-	}
+	ConfirmNone(nil, isPositive)
+	ConfirmNone([]int{}, isPositive)
+	ConfirmNone([]int{0}, isPositive)
+	RefuteNone([]int{0, 1}, isPositive)
+	RefuteNone([]int{0, 0, 1}, isPositive)
 
-	ConfirmNone(nil, IsPositive)
-	ConfirmNone([]int{}, IsPositive)
-	ConfirmNone([]int{0}, IsPositive)
-	RefuteNone([]int{0, 1}, IsPositive)
-	RefuteNone([]int{0, 0, 1}, IsPositive)
+	RefuteNone([]int{1}, isPositive)
+	RefuteNone([]int{1, 1}, isPositive)
+	RefuteNone([]int{1, 1, 1}, isPositive)
 
-	RefuteNone([]int{1}, IsPositive)
-	RefuteNone([]int{1, 1}, IsPositive)
-	RefuteNone([]int{1, 1, 1}, IsPositive)
+	ConfirmNone([]interface{}{}, isPositive)
+	ConfirmNone([]interface{}{0}, isPositive)
+	RefuteNone([]interface{}{0, 1}, isPositive)
+	RefuteNone([]interface{}{0, 0, 1}, isPositive)
 
-	ConfirmNone([]interface{}{}, IsPositive)
-	ConfirmNone([]interface{}{0}, IsPositive)
-	RefuteNone([]interface{}{0, 1}, IsPositive)
-	RefuteNone([]interface{}{0, 0, 1}, IsPositive)
-
-	RefuteNone([]interface{}{1}, IsPositive)
-	RefuteNone([]interface{}{1, 1}, IsPositive)
-	RefuteNone([]interface{}{1, 1, 1}, IsPositive)
+	RefuteNone([]interface{}{1}, isPositive)
+	RefuteNone([]interface{}{1, 1}, isPositive)
+	RefuteNone([]interface{}{1, 1, 1}, isPositive)
 }
 
 func TestOne(t *testing.T) {
-	ConfirmOne := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := One(o, f); {
-		case e != nil:
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
 			t.Fatalf("One(%v, f) iteration failed with error %v", o, e)
-		case !r:
+		}
+	}
+
+	ConfirmOne := func(o interface{}, f func(i interface{}) bool) {
+		defer reportIterationError(o)
+		if !One(o, f) {
 			t.Fatalf("One(%v, f) should be true but is false", o)
 		}
 	}
 
 	RefuteOne := func(o interface{}, f func(i interface{}) bool) {
-		switch r, e := One(o, f); {
-		case e != nil:
-			t.Fatalf("One(%v, f) iteration failed with error %v", o, e)
-		case r:
+		defer reportIterationError(o)
+		if One(o, f) {
 			t.Fatalf("One(%v, f) should be false but is true", o)
 		}
 	}
 
-	IsPositive := func(i interface{}) bool {
-		if i, ok := i.(int); ok {
-			return i > 0
-		}
-		return false
-	}
+	RefuteOne(nil, isPositive)
+	RefuteOne([]int{}, isPositive)
+	RefuteOne([]int{0}, isPositive)
+	ConfirmOne([]int{0, 1}, isPositive)
+	ConfirmOne([]int{0, 0, 1}, isPositive)
+	RefuteOne([]int{0, 0, 1, 1}, isPositive)
 
-	RefuteOne(nil, IsPositive)
-	RefuteOne([]int{}, IsPositive)
-	RefuteOne([]int{0}, IsPositive)
-	ConfirmOne([]int{0, 1}, IsPositive)
-	ConfirmOne([]int{0, 0, 1}, IsPositive)
-	RefuteOne([]int{0, 0, 1, 1}, IsPositive)
+	ConfirmOne([]int{1}, isPositive)
+	RefuteOne([]int{1, 1}, isPositive)
+	RefuteOne([]int{1, 1, 1}, isPositive)
 
-	ConfirmOne([]int{1}, IsPositive)
-	RefuteOne([]int{1, 1}, IsPositive)
-	RefuteOne([]int{1, 1, 1}, IsPositive)
+	RefuteOne([]interface{}{}, isPositive)
+	RefuteOne([]interface{}{0}, isPositive)
+	ConfirmOne([]interface{}{0, 1}, isPositive)
+	ConfirmOne([]interface{}{0, 0, 1}, isPositive)
+	RefuteOne([]interface{}{0, 0, 1, 1}, isPositive)
 
-	RefuteOne([]interface{}{}, IsPositive)
-	RefuteOne([]interface{}{0}, IsPositive)
-	ConfirmOne([]interface{}{0, 1}, IsPositive)
-	ConfirmOne([]interface{}{0, 0, 1}, IsPositive)
-	RefuteOne([]interface{}{0, 0, 1, 1}, IsPositive)
-
-	ConfirmOne([]interface{}{1}, IsPositive)
-	RefuteOne([]interface{}{1, 1}, IsPositive)
-	RefuteOne([]interface{}{1, 1, 1}, IsPositive)
+	ConfirmOne([]interface{}{1}, isPositive)
+	RefuteOne([]interface{}{1, 1}, isPositive)
+	RefuteOne([]interface{}{1, 1, 1}, isPositive)
 }
 
 func TestDensity(t *testing.T) {
@@ -184,15 +164,17 @@ func TestDensity(t *testing.T) {
 	}
 
 	ConfirmDensity := func(o interface{}, r float64) {
+		defer func() {
+			if e := recover(); e != nil {
+				t.Fatalf("Density(%v, f) iteration failed with error %v", o, e)
+			}
+		}()
+
 		tol := 0.0001
-		switch d, e := Density(o, IsPositive); {
-		case e != nil:
-			t.Fatalf("Density(%v, f) iteration failed with error %v", o, e)
-		case d - r > tol && r - d < tol:
+		if d := Density(o, IsPositive); d - r > tol && r - d < tol {
 			t.Fatalf("Density(%v, f) should be true but is false", o)
 		}
 	}
-
 	ConfirmDensity(nil, 0.0)
 	ConfirmDensity([]int{}, 0.0)
 	ConfirmDensity([]int{0}, 0.0)
@@ -239,7 +221,6 @@ func TestIsDense(t *testing.T) {
 			t.Fatalf("Dense(%v, %v, f) should be false but is true", o, d)
 		}
 	}
-
 	RefuteIsDense(nil, 0.0)
 	RefuteIsDense(nil, 0.5)
 	RefuteIsDense(nil, 1.0)
@@ -303,7 +284,6 @@ func TestIsSparse(t *testing.T) {
 			t.Fatalf("Dense(%v, %v, f) should be false but is true", o, d)
 		}
 	}
-
 	ConfirmIsSparse(nil, 0.0)
 	ConfirmIsSparse(nil, 0.5)
 	ConfirmIsSparse(nil, 1.0)

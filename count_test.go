@@ -1,19 +1,30 @@
 package sequences
 
 import (
-	"reflect"
 	"testing"
 )
 
-func TestCount(t *testing.T) {
-	ConfirmCount := func(o, r interface{}, f func(interface{}) bool) {
-		switch x, e := Count(o, f); {
-		case e != nil:
-			t.Fatalf("Count(%v, f) failed with error %v", o, e)
-		case !reflect.DeepEqual(r, x):
+func TestCountSlice(t *testing.T) {
+	ConfirmCount := func(o, f, r interface{}) {
+		defer func() {
+			if e := recover(); e != nil {
+				t.Fatalf("Count(%v, f) failed with error %v", o, e)
+			}
+		}()
+		if x := Each(o, f); x != r {
 			t.Fatalf("Count(%v, f) should be %v but is %v", o, r, x)
 		}
 	}
+
+	f := func(i int) bool {
+		return i > 0
+	}
+
+	ConfirmCount([]int{}, f, 0)
+	ConfirmCount([]int{0}, f, 0)
+	ConfirmCount([]int{1}, f, 1)
+	ConfirmCount([]int{0, 1}, f, 1)
+	ConfirmCount([]int{1, 2}, f, 2)
 
 	IsPositive := func(i interface{}) bool {
 		if i, ok := i.(int); ok {
@@ -22,19 +33,11 @@ func TestCount(t *testing.T) {
 		return false
 	}
 
-	ConfirmCount([]int{}, 0, IsPositive)
-	ConfirmCount([]interface{}{}, 0, IsPositive)
-
-	ConfirmCount([]int{0}, 0, IsPositive)
-	ConfirmCount([]int{1}, 1, IsPositive)
-	ConfirmCount([]interface{}{"test"}, 0, IsPositive)
-	ConfirmCount([]interface{}{1}, 1, IsPositive)
-
-
-	ConfirmCount([]int{0, 1}, 1, IsPositive)
-	ConfirmCount([]int{1, 2}, 2, IsPositive)
-	ConfirmCount([]interface{}{"test", 1}, 1, IsPositive)
-	ConfirmCount([]interface{}{1, 2}, 2, IsPositive)
+	ConfirmCount([]interface{}{"test"}, IsPositive, 0)
+	ConfirmCount([]interface{}{1}, IsPositive, 1)
+	ConfirmCount([]interface{}{"test", 1}, IsPositive, 1)
+	ConfirmCount([]interface{}{0, 1}, IsPositive, 1)
+	ConfirmCount([]interface{}{1, 2}, IsPositive, 2)
 }
 
 
@@ -53,16 +56,6 @@ func TestCountFunction(t *testing.T) {
 		case count != limit:
 			//t.Fatalf("total iterations should be %v but are %v", limit, count)
 			panic(count)
-		}
-	}
-
-	ConfirmVariadicEach := func(F, f interface{}) {
-		value = 0
-		switch count, ok := Count(F, f); {
-		case !ok:
-			t.Fatalf("failed to perform iteration %v over %v", f, F)
-		case count != 1:
-			t.Fatalf("total iterations should be 1 but are %v", count)
 		}
 	}
 
@@ -85,17 +78,6 @@ func TestCountFunction(t *testing.T) {
 				t.Fatalf("index %v erroneously reported as %v", count, i)
 			case v != i:
 				t.Fatalf("value %v erroneously reported as %v", i, v)
-			}
-			count++
-		})
-
-		ConfirmVariadicEach(F, func(v ...interface{}) {
-			switch {
-			case count != 0:
-				t.Fatalf("variadic function erroneously called %v times", count)
-			case len(v) != limit:
-				//t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
-				panic(v)
 			}
 			count++
 		})
@@ -136,31 +118,10 @@ func TestCountFunction(t *testing.T) {
 			}
 			count++
 		})
-
-		ConfirmVariadicEach(F, func(v ...R.Value) {
-			switch {
-			case count != 0:
-				t.Fatalf("variadic function erroneously called %v times", count)
-			case len(v) != limit:
-				t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
-			}
-			count++
-		})
 	}
 
 	ConfirmEachIntFunction := func(F interface{}) {
 		ConfirmEachFunction(F)
-
-		ConfirmVariadicEach(F, func(v ...int) {
-			switch {
-			case count != 0:
-				t.Fatalf("variadic function erroneously called %v times", count)
-			case len(v) != limit:
-				t.Fatalf("variadic slice generator %v erroneously passed as %v", F, v)
-			}
-			count++
-		})
-
 		ConfirmEach(F, func(v int) {
 			if v != count {
 				t.Fatalf("value %v erroneously reported as %v", count, v)

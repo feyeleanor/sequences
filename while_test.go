@@ -6,207 +6,126 @@ import(
 )
 
 func TestWhileSlice(t *testing.T) {
+	var iterators	[]interface{}
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
+			t.Fatalf("While(%v, f) iteration failed with error %v", o, e)
+		}
+	}
+
 	ConfirmWhileTrue := func(s interface{}, count int) {
-		switch i, e := While(s, func(v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := While(s, func(index int, v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := While(s, func(index, v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
+		defer reportIterationError(s)
+		for n, f := range iterators {
+			if i := While(s, f); i != count {
+				t.Fatalf("While(%v, iterators[%v]): should have succeeded %v times but instead succeeded %v times", s, n, count, i)
+			}
 		}
 	}
-	ConfirmWhileTrue(partially_iterable_slice{}, 0)
-	ConfirmWhileTrue(partially_iterable_slice{false}, 0)
-	ConfirmWhileTrue(partially_iterable_slice{false, true}, 0)
-	ConfirmWhileTrue(partially_iterable_slice{true, false}, 1)
-	ConfirmWhileTrue(partially_iterable_slice{true, true}, 2)
-	ConfirmWhileTrue(partially_iterable_slice{true, true, true}, 3)
-	ConfirmWhileTrue(partially_iterable_slice{true, true, false, true}, 2)
 
-	ConfirmWhileIndexableTrue := func(s interface{}, count int) {
-		ConfirmWhileTrue(s, count)
-		switch i, e := While(s, func(v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := While(s, func(index int, v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := While(s, func(index interface{}, v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
+	iterators = []interface{}{
+		func(v interface{}) bool { return v.(bool) },
+		func(index int, v interface{}) bool { return v.(bool) },
+		func(index, v interface{}) bool { return v.(bool) },
 	}
-	ConfirmWhileIndexableTrue(indexable_slice{}, 0)
-	ConfirmWhileIndexableTrue(indexable_slice{false}, 0)
-	ConfirmWhileIndexableTrue(indexable_slice{false, true}, 0)
-	ConfirmWhileIndexableTrue(indexable_slice{true, false}, 1)
-	ConfirmWhileIndexableTrue(indexable_slice{true, true}, 2)
-	ConfirmWhileIndexableTrue(indexable_slice{true, true, true}, 3)
-	ConfirmWhileIndexableTrue(indexable_slice{true, true, false, true}, 2)
-	ConfirmWhileIndexableTrue(indexable_function(func(i int) interface{} { return i > 2 }), 0)
-	ConfirmWhileIndexableTrue(indexable_function(func(i int) interface{} { return i < 4 }), 4)
+	ConfirmWhileTrue(partially_enumerable_slice{}, 0)
+	ConfirmWhileTrue(partially_enumerable_slice{false}, 0)
+	ConfirmWhileTrue(partially_enumerable_slice{false, true}, 0)
+	ConfirmWhileTrue(partially_enumerable_slice{true, false}, 1)
+	ConfirmWhileTrue(partially_enumerable_slice{true, true}, 2)
+	ConfirmWhileTrue(partially_enumerable_slice{true, true, true}, 3)
+	ConfirmWhileTrue(partially_enumerable_slice{true, true, false, true}, 2)
 
-	ConfirmWhileSliceTrue := func(s interface{}, count int) {
-		ConfirmWhileIndexableTrue(s, count)
-		switch i, e := While(s, func(v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
+	iterators = append(
+		iterators,
+		func(v bool) bool { return v },
+		func(index int, v bool) bool { return v },
+		func(index interface{}, v bool) bool { return v },
+	)
+	ConfirmWhileTrue(indexable_slice{}, 0)
+	ConfirmWhileTrue(indexable_slice{false}, 0)
+	ConfirmWhileTrue(indexable_slice{false, true}, 0)
+	ConfirmWhileTrue(indexable_slice{true, false}, 1)
+	ConfirmWhileTrue(indexable_slice{true, true}, 2)
+	ConfirmWhileTrue(indexable_slice{true, true, true}, 3)
+	ConfirmWhileTrue(indexable_slice{true, true, false, true}, 2)
+	ConfirmWhileTrue(indexable_function(func(i int) interface{} { return i > 2 }), 0)
+	ConfirmWhileTrue(indexable_function(func(i int) interface{} { return i < 4 }), 4)
 
-		switch i, e := While(s, func(index int, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
+	iterators = append(
+		iterators,
+		func(v reflect.Value) bool { return v.Bool() },
+		func(index int, v reflect.Value) bool { return v.Bool() },
+		func(index interface{}, v reflect.Value) bool { return v.Bool() },
+		func(index, v reflect.Value) bool { return v.Bool() },
+	)
 
-		switch i, e := While(s, func(index interface{}, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := While(s, func(index, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-	}
-	ConfirmWhileSliceTrue([]bool{}, 0)
-	ConfirmWhileSliceTrue([]bool{false}, 0)
-	ConfirmWhileSliceTrue([]bool{false, true}, 0)
-	ConfirmWhileSliceTrue([]bool{true, false}, 1)
-	ConfirmWhileSliceTrue([]bool{true, true}, 2)
-	ConfirmWhileSliceTrue([]bool{true, true, true}, 3)
-	ConfirmWhileSliceTrue([]bool{true, true, false, true}, 2)
+	ConfirmWhileTrue([]bool{}, 0)
+	ConfirmWhileTrue([]bool{false}, 0)
+	ConfirmWhileTrue([]bool{false, true}, 0)
+	ConfirmWhileTrue([]bool{true, false}, 1)
+	ConfirmWhileTrue([]bool{true, true}, 2)
+	ConfirmWhileTrue([]bool{true, true, true}, 3)
+	ConfirmWhileTrue([]bool{true, true, false, true}, 2)
 }
 
 func TestUntilSlice(t *testing.T) {
+	var iterators	[]interface{}
+	reportIterationError := func(o interface{}) {
+		if e := recover(); e != nil {
+			t.Fatalf("Until(%v, f) iteration failed with error %v", o, e)
+		}
+	}
+
 	ConfirmUntilTrue := func(s interface{}, count int) {
-		switch i, e := Until(s, func(v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index int, v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index, v interface{}) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
+		defer reportIterationError(s)
+		for n, f := range iterators {
+			if i := Until(s, f); i != count {
+				t.Fatalf("Until(%v, iterators[%v]): should have succeeded %v times but instead succeeded %v times", s, n, count, i)
+			}
 		}
 	}
-	ConfirmUntilTrue(partially_iterable_slice{}, 0)
-	ConfirmUntilTrue(partially_iterable_slice{false}, 1)
-	ConfirmUntilTrue(partially_iterable_slice{true, false}, 0)
-	ConfirmUntilTrue(partially_iterable_slice{false, true}, 1)
-	ConfirmUntilTrue(partially_iterable_slice{false, false}, 2)
-	ConfirmUntilTrue(partially_iterable_slice{false, false, false}, 3)
-	ConfirmUntilTrue(partially_iterable_slice{false, false, true, false}, 2)
 
-	ConfirmUntilIndexableTrue := func(s interface{}, count int) {
-		ConfirmUntilTrue(s, count)
-		switch i, e := Until(s, func(v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index int, v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index interface{}, v bool) bool { return v == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
+	iterators = []interface{}{
+		func(v interface{}) bool { return v == true },
+		func(index int, v interface{}) bool { return v == true },
+		func(index, v interface{}) bool { return v == true },
 	}
-	ConfirmUntilIndexableTrue(indexable_slice{}, 0)
-	ConfirmUntilIndexableTrue(indexable_slice{false}, 1)
-	ConfirmUntilIndexableTrue(indexable_slice{true, false}, 0)
-	ConfirmUntilIndexableTrue(indexable_slice{false, true}, 1)
-	ConfirmUntilIndexableTrue(indexable_slice{false, false}, 2)
-	ConfirmUntilIndexableTrue(indexable_slice{false, false, false}, 3)
-	ConfirmUntilIndexableTrue(indexable_slice{false, false, true, false}, 2)
-	ConfirmUntilIndexableTrue(indexable_function(func(i int) interface{} { return i < 2 }), 0)
-	ConfirmUntilIndexableTrue(indexable_function(func(i int) interface{} { return i > 3 }), 4)
+	ConfirmUntilTrue(partially_enumerable_slice{}, 0)
+	ConfirmUntilTrue(partially_enumerable_slice{false}, 1)
+	ConfirmUntilTrue(partially_enumerable_slice{true, false}, 0)
+	ConfirmUntilTrue(partially_enumerable_slice{false, true}, 1)
+	ConfirmUntilTrue(partially_enumerable_slice{false, false}, 2)
+	ConfirmUntilTrue(partially_enumerable_slice{false, false, false}, 3)
+	ConfirmUntilTrue(partially_enumerable_slice{false, false, true, false}, 2)
 
-	ConfirmUntilSliceTrue := func(s interface{}, count int) {
-		ConfirmUntilIndexableTrue(s, count)
-		switch i, e := Until(s, func(v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
+	iterators = append(
+		iterators,
+		func(v bool) bool { return v == true },
+		func(index int, v bool) bool { return v == true },
+		func(index interface{}, v bool) bool { return v == true },
+	)
+	ConfirmUntilTrue(indexable_slice{}, 0)
+	ConfirmUntilTrue(indexable_slice{false}, 1)
+	ConfirmUntilTrue(indexable_slice{true, false}, 0)
+	ConfirmUntilTrue(indexable_slice{false, true}, 1)
+	ConfirmUntilTrue(indexable_slice{false, false}, 2)
+	ConfirmUntilTrue(indexable_slice{false, false, false}, 3)
+	ConfirmUntilTrue(indexable_slice{false, false, true, false}, 2)
+	ConfirmUntilTrue(indexable_function(func(i int) interface{} { return i < 2 }), 0)
+	ConfirmUntilTrue(indexable_function(func(i int) interface{} { return i > 3 }), 4)
 
-		switch i, e := Until(s, func(index int, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index interface{}, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-
-		switch i, e := Until(s, func(index, v reflect.Value) bool { return v.Bool() == true }); {
-		case e != nil:
-			t.Fatalf("%v: iteration failed with error %v", s, e)
-		case i != count:
-			t.Fatalf("%v: should have succeeded %v times but instead succeeded %v times", s, count, i)
-		}
-	}
-	ConfirmUntilSliceTrue([]bool{}, 0)
-	ConfirmUntilSliceTrue([]bool{false}, 1)
-	ConfirmUntilSliceTrue([]bool{true, false}, 0)
-	ConfirmUntilSliceTrue([]bool{false, true}, 1)
-	ConfirmUntilSliceTrue([]bool{false, false}, 2)
-	ConfirmUntilSliceTrue([]bool{false, false, false}, 3)
-	ConfirmUntilSliceTrue([]bool{false, false, true, false}, 2)
+	iterators = append(
+		iterators,
+		func(v reflect.Value) bool { return v.Bool() == true },
+		func(index int, v reflect.Value) bool { return v.Bool() == true },
+		func(index interface{}, v reflect.Value) bool { return v.Bool() == true },
+		func(index, v reflect.Value) bool { return v.Bool() == true },
+	)
+	ConfirmUntilTrue([]bool{}, 0)
+	ConfirmUntilTrue([]bool{false}, 1)
+	ConfirmUntilTrue([]bool{true, false}, 0)
+	ConfirmUntilTrue([]bool{false, true}, 1)
+	ConfirmUntilTrue([]bool{false, false}, 2)
+	ConfirmUntilTrue([]bool{false, false, false}, 3)
+	ConfirmUntilTrue([]bool{false, false, true, false}, 2)
 }

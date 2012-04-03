@@ -1,69 +1,98 @@
 package sequences
 
-func Any(container interface{}, f func(interface{}) bool) (b bool, e error) {
-	var l	int
-	if l, e = Until(container, f); e == nil {
-		 b = l > 0
-	}
-	return 
-}
-
-func All(container interface{}, f func(interface{}) bool) (b bool, e error) {
-	var l	int
-	if l, e = While(container, f); e == nil {
-		lc, _ := Len(container)
-		b = l == lc
-	}
-	return
-}
-
-func None(container interface{}, f func(interface{}) bool) (b bool, e error) {
-	var l	int
-	if l, e = Until(container, f); e == nil {
-		b = l == 0
+func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) (count int, e error) {
+	defer func() {
+		x := recover()
+		switch x := x.(type) {
+		case nil:
+			e = nil
+		case error:
+			e = x
+		default:
+			panic(x)
+		} 
+	}()
+	for steps := enum.steps; steps > 0; steps-- {
+		if cursor := enum.Next(); cond(cursor) {
+			f(cursor)
+			count++
+		}
 	}
 	return
 }
 
-func One(container interface{}, f func(interface{}) bool) (b bool, e error) {
+func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) (count int, e error) {
+	defer func() {
+		x := recover()
+		switch x := x.(type) {
+		case nil:
+			e = nil
+		case error:
+			e = x
+		default:
+			panic(x)
+		} 
+	}()
+	for steps := enum.steps; steps > 0; steps-- {
+		if cursor := enum.Next(); !cond(cursor) {
+			f(cursor)
+			count++
+		}
+	}
+	return
+}
+
+func None(container interface{}, f func(interface{}) bool) bool {
 	var count	int
-	_, e = While(container, func(x interface{}) bool {
+	Until(container, func(x interface{}) bool {
 		if f(x) {
 			count++
 		}
-		if count > 1 {
-			return false
-		}
-		return true
+		return count > 0
 	})
-	if e == nil {
-		b = count == 1
-	}
-	return
+	return count == 0
 }
 
-func Density(container interface{}, f func(interface{}) bool) (r float64, e error) {
-	var c	int
-	if c, e = Count(container, f); e == nil {
-		var l	int
-		switch l, e = Len(container); {
-		case e != nil:
-			return
-		case l == 0:
-			r = float64(1)
-		default:
-			r = float64(c) / float64(l)
+func One(container interface{}, f func(interface{}) bool) bool {
+	var count	int
+	While(container, func(x interface{}) bool {
+		if f(x) {
+			count++
 		}
+		return count < 2
+	})
+	return count == 1
+}
+
+func Any(container interface{}, f func(interface{}) bool) bool {
+	return Until(container, f) > 0
+}
+
+func All(container interface{}, f func(interface{}) bool) bool {
+	l := Len(container)
+	return l > 0 && l == While(container, f)
+}
+
+/*
+	Density determines the proportion of a sequence which matches a given predicate
+*/
+func Density(container interface{}, f func(interface{}) bool) (r float64) {
+	n := 0
+	l := Each(container, func(x interface{}) {
+		if f(x) {
+			n++
+		}
+	})
+	if l > 0 {
+		r = float64(n) / float64(l)
 	}
 	return
 }
 
 func IsDense(container interface{}, threshold float64, f func(interface{}) bool) bool {
-	d, e := Density(container, f);
-	return e == nil && d > threshold
+	return Density(container, f) > threshold
 }
 
 func IsSparse(container interface{}, threshold float64, f func(interface{}) bool) bool {
-	d, e := Density(container, f);
-	return e == nil && d <= threshold
+	return Density(container, f) <= threshold
 }
