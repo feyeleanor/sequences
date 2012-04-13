@@ -9,6 +9,7 @@ type Enumerator struct {
 	cursor		int
 	steps		int
 	f			interface{}
+	seed		interface{}
 	error
 }
 
@@ -18,6 +19,10 @@ func (enum Enumerator) Cursor() int {
 
 func (enum Enumerator) F() interface{} {
 	return enum.f
+}
+
+func (enum Enumerator) Seed() interface{} {
+	return enum.seed
 }
 
 func (enum *Enumerator) Next() (cursor int) {
@@ -250,6 +255,223 @@ func (enum *Enumerator) each(f interface{}) (count int) {
 		}
 	default:
 		panic(f)
+	}
+	return
+}
+
+func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
+	enum.Bind(f)
+	enum.seed = seed
+	enum.cursor = 0
+	enum.steps = enum.Bounds()
+	switch seq := enum.Sequence.(type) {
+	case Reducible:
+		r = seq.Reduce(enum)
+	case Indexable:
+		r = reduceIndexable(enum, seq)
+	case []bool:
+		r = reduceBoolSlice(enum, seq)
+/*	case []complex64:
+		count = eachComplex64Slice(enum, seq)
+	case []complex128:
+		count = eachComplex128Slice(enum, seq)
+	case []error:
+		count = eachErrorSlice(enum, seq)
+	case []float32:
+		count = eachFloat32Slice(enum, seq)
+	case []float64:
+		count = eachFloat64Slice(enum, seq)
+	case []int:
+		count = eachIntSlice(enum, seq)
+	case []int8:
+		count = eachInt8Slice(enum, seq)
+	case []int16:
+		count = eachInt16Slice(enum, seq)
+	case []int32:
+		count = eachInt32Slice(enum, seq)
+	case []int64:
+		count = eachInt64Slice(enum, seq)
+	case []interface{}:
+		count = eachInterfaceSlice(enum, seq)
+	case []string:
+		count = eachStringSlice(enum, seq)
+	case []uint:
+		count = eachUintSlice(enum, seq)
+	case []uint8:
+		count = eachUint8Slice(enum, seq)
+	case []uint16:
+		count = eachUint16Slice(enum, seq)
+	case []uint32:
+		count = eachUint32Slice(enum, seq)
+	case []uint64:
+		count = eachUint64Slice(enum, seq)
+	case []uintptr:
+		count = eachUintptrSlice(enum, seq)
+	case []R.Value:
+		count = eachRValueSlice(enum, seq)
+	case chan bool:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachBoolChannel(enum, seq)
+		}
+	case chan complex64:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachComplex64Channel(enum, seq)
+		}
+	case chan complex128:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachComplex128Channel(enum, seq)
+		}
+	case chan error:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachErrorChannel(enum, seq)
+		}
+	case chan float32:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachFloat32Channel(enum, seq)
+		}
+	case chan float64:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachFloat64Channel(enum, seq)
+		}
+	case chan int:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachIntChannel(enum, seq)
+		}
+	case chan int8:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachInt8Channel(enum, seq)
+		}
+	case chan int16:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachInt16Channel(enum, seq)
+		}
+	case chan int32:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachInt32Channel(enum, seq)
+		}
+	case chan int64:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachInt64Channel(enum, seq)
+		}
+	case chan interface{}:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachInterfaceChannel(enum, seq)
+		}
+	case chan string:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachStringChannel(enum, seq)
+		}
+	case chan uint:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUintChannel(enum, seq)
+		}
+	case chan uint8:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUint8Channel(enum, seq)
+		}
+	case chan uint16:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUint16Channel(enum, seq)
+		}
+	case chan uint32:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUint32Channel(enum, seq)
+		}
+	case chan uint64:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUint64Channel(enum, seq)
+		}
+	case chan uintptr:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachUintptrChannel(enum, seq)
+		}
+	case chan R.Value:
+		if enum.Span < 1 {
+			panic(ASCENDING_SEQUENCE)
+		} else {
+			count = eachRValueChannel(enum, seq)
+		}
+	case R.Value:
+		switch seq.Kind() {
+		case R.Slice:
+			count = eachSlice(enum, seq)
+		case R.Chan:
+			if enum.Span < 1 {
+				panic(ASCENDING_SEQUENCE)
+			} else {
+				count = eachChannel(enum, seq)
+			}
+		case R.Func:
+			if isFunctionSequence(seq) {
+				count = eachFunction(enum, seq)
+			} else {
+				panic(NOT_A_SEQUENCE)
+			}
+		default:
+			switch c := R.ValueOf(seq); c.Kind() {
+			case R.Slice:
+				count = eachSlice(enum, c)
+			case R.Chan:
+				if enum.Span < 1 {
+					panic(ASCENDING_SEQUENCE)
+				} else {
+					count = eachChannel(enum, c)
+				}
+			case R.Func:
+				if isFunctionSequence(seq) {
+					count = eachFunction(enum, c)
+				} else {
+					panic(NOT_A_SEQUENCE)
+				}
+			}
+		}
+*/	}
+	return
+}
+
+func (enum *Enumerator) reduce(f func(int)) {
+	defer IgnoreIndexOutOfRange()
+	enum.cursor = 0
+	for {
+		f(enum.Next())
 	}
 	return
 }

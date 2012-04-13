@@ -30,6 +30,10 @@ type Enumerable interface {
 	Each(enum *Enumerator) (count int)
 }
 
+type Reducible interface {
+	Reduce(enum *Enumerator) interface{}
+}
+
 var(
 	_MEASURABLE = R.TypeOf(new(Measurable)).Elem()
 	_CONFINED = R.TypeOf(new(Confined)).Elem()
@@ -155,7 +159,16 @@ func Until(container, f interface{}) (count int) {
 	return
 }
 
+func Reduce(seq, seed, f interface{}) interface{} {
+	return ReduceBy(seq, seed, 1, f)
+}
 
+func ReduceBy(seq, seed interface{}, span int, f interface{}) interface{} {
+	enum := &Enumerator{ Sequence: seq, Span: span, Limit: -1 }
+	return enum.Reduce(seed, f)
+}
+
+/*
 type Reducible interface {
 	Reduce(seed, function interface{}) (r interface{}, e error)
 }
@@ -186,3 +199,4 @@ func Reduce(container, seed interface{}, f interface{}) (r interface{}, e error)
 	}
 	return
 }
+*/

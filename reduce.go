@@ -2,40 +2,59 @@ package sequences
 
 import "reflect"
 
-func reduceIndexable(c Indexable, seed, f interface{}) (r interface{}, e error) {
-	if l := Len(c); l > 0 {
-		switch f := f.(type) {
-		case func(interface{}, interface{}) interface{}:
-			for i := 0; i < l; i++ {
-				seed = f(seed, c.AtOffset(i))
-			}
-		default:
-			if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-				switch f.Type().NumIn() {
-				case 2:
-					p := make([]reflect.Value, 2, 2)
-					for i := 0; i < l; i++ {
-						p[0], p[1] = reflect.ValueOf(i), reflect.ValueOf(c.AtOffset(i))
-						f.Call(p)
-					}
-				default:
-					panic(UNHANDLED_ITERATOR)
-				}
+func reduceIndexable(enum *Enumerator, seq Indexable) (r interface{}) {
+	switch f := enum.f.(type) {
+	case func(interface{}, interface{}) interface{}:
+		r = enum.seed
+		enum.reduce(func(cursor int) {
+			r = f(r, seq.AtOffset(cursor))
+		})
+	case func(interface{}, int, interface{}) interface{}:
+		r = enum.seed
+		enum.reduce(func(cursor int) {
+			r = f(r, cursor, seq.AtOffset(cursor))
+		})
+	case func(interface{}, interface{}, interface{}) interface{}:
+		r = enum.seed
+		enum.reduce(func(cursor int) {
+			r = f(r, cursor, seq.AtOffset(cursor))
+		})
+	default:
+		if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+			switch f.Type().NumIn() {
+			case 2:
+				p := make([]reflect.Value, 2, 2)
+				p[0] = reflect.ValueOf(enum.seed)
+				enum.reduce(func(cursor int) {
+					p[1] = reflect.ValueOf(seq.AtOffset(cursor))
+					p[0] = f.Call(p)[0]
+				})
+				r = p[0].Interface()
+			case 3:
+				p := make([]reflect.Value, 3, 3)
+				p[0] = reflect.ValueOf(enum.seed)
+				enum.reduce(func(cursor int) {
+					p[1], p[2] = reflect.ValueOf(cursor), reflect.ValueOf(seq.AtOffset(cursor))
+					p[0] = f.Call(p)[0]
+				})
+				r = p[0].Interface()
+			default:
+				panic(UNHANDLED_ITERATOR)
 			}
 		}
 	}
 	return
 }
 
-func reduceMappable(c Mappable, seed, function interface{}) (r interface{}, e error) {
+func reduceMappable(enum *Enumerator, function interface{}) (r interface{}) {
 	panic(UNHANDLED_ITERATOR)
 }
 
-func reduceEnumerable(container Enumerable, seed, f interface{}) (r interface{}, e error) {
+func reduceEnumerable(enum *Enumerator, f interface{}) (r interface{}) {
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:
-		r = seed
-		Each(container, func(x interface{}) {
+		r = enum.seed
+		enum.Each(func(x interface{}) {
 			r = f(r, x)
 		})
 	default:
@@ -44,6 +63,7 @@ func reduceEnumerable(container Enumerable, seed, f interface{}) (r interface{},
 	return
 }
 
+/*
 func reduceSlice(s reflect.Value, seed, f interface{}) (r interface{}, e error) {
 	if l := Len(s); l > 0 {
 		switch f := f.(type) {
@@ -172,3 +192,4 @@ func reduceFunction(g reflect.Value, seed, f interface{}) (r interface{}, e erro
 	}
 	return
 }
+*/
