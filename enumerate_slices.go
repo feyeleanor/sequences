@@ -867,6 +867,22 @@ func eachInt8Slice(enum *Enumerator, seq []int8) (i int) {
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
 		})
+	case func(int):
+		i = enum.each(func(cursor int) {
+			f(int(seq[cursor]))
+		})
+	case func(int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(int(seq[cursor]))
+		})
+	case func(int, int):
+		i = enum.each(func(cursor int) {
+			f(cursor, int(seq[cursor]))
+		})
+	case func(int, int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, int(seq[cursor]))
+		})
 	case func(interface{}, int8):
 		i = enum.each(func(cursor int) {
 			f(cursor, seq[cursor])
@@ -935,6 +951,10 @@ func eachInt8Slice(enum *Enumerator, seq []int8) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan int:
+		i = enum.each(func(cursor int) {
+			f <- int(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -946,6 +966,13 @@ func eachInt8Slice(enum *Enumerator, seq []int8) (i int) {
 	case []chan int8:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan int:
+		i = enum.each(func(cursor int) {
+			v := int(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -987,6 +1014,22 @@ func eachInt16Slice(enum *Enumerator, seq []int16) (i int) {
 	case func(int, int16) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(int):
+		i = enum.each(func(cursor int) {
+			f(int(seq[cursor]))
+		})
+	case func(int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(int(seq[cursor]))
+		})
+	case func(int, int):
+		i = enum.each(func(cursor int) {
+			f(cursor, int(seq[cursor]))
+		})
+	case func(int, int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, int(seq[cursor]))
 		})
 	case func(interface{}, int16):
 		i = enum.each(func(cursor int) {
@@ -1056,6 +1099,10 @@ func eachInt16Slice(enum *Enumerator, seq []int16) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan int:
+		i = enum.each(func(cursor int) {
+			f <- int(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -1067,6 +1114,13 @@ func eachInt16Slice(enum *Enumerator, seq []int16) (i int) {
 	case []chan int16:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan int:
+		i = enum.each(func(cursor int) {
+			v := int(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -1108,6 +1162,22 @@ func eachInt32Slice(enum *Enumerator, seq []int32) (i int) {
 	case func(int, int32) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(int):
+		i = enum.each(func(cursor int) {
+			f(int(seq[cursor]))
+		})
+	case func(int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(int(seq[cursor]))
+		})
+	case func(int, int):
+		i = enum.each(func(cursor int) {
+			f(cursor, int(seq[cursor]))
+		})
+	case func(int, int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, int(seq[cursor]))
 		})
 	case func(interface{}, int32):
 		i = enum.each(func(cursor int) {
@@ -1177,6 +1247,10 @@ func eachInt32Slice(enum *Enumerator, seq []int32) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan int:
+		i = enum.each(func(cursor int) {
+			f <- int(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -1188,6 +1262,13 @@ func eachInt32Slice(enum *Enumerator, seq []int32) (i int) {
 	case []chan int32:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan int:
+		i = enum.each(func(cursor int) {
+			v := int(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -1229,6 +1310,22 @@ func eachInt64Slice(enum *Enumerator, seq []int64) (i int) {
 	case func(int, int64) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(int):
+		i = enum.each(func(cursor int) {
+			f(int(seq[cursor]))
+		})
+	case func(int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(int(seq[cursor]))
+		})
+	case func(int, int):
+		i = enum.each(func(cursor int) {
+			f(cursor, int(seq[cursor]))
+		})
+	case func(int, int) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, int(seq[cursor]))
 		})
 	case func(interface{}, int64):
 		i = enum.each(func(cursor int) {
@@ -1298,6 +1395,10 @@ func eachInt64Slice(enum *Enumerator, seq []int64) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan int:
+		i = enum.each(func(cursor int) {
+			f <- int(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -1309,6 +1410,13 @@ func eachInt64Slice(enum *Enumerator, seq []int64) (i int) {
 	case []chan int64:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan int:
+		i = enum.each(func(cursor int) {
+			v := int(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -1679,6 +1787,22 @@ func eachUint8Slice(enum *Enumerator, seq []uint8) (i int) {
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
 		})
+	case func(uint):
+		i = enum.each(func(cursor int) {
+			f(uint(seq[cursor]))
+		})
+	case func(uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(uint(seq[cursor]))
+		})
+	case func(int, uint):
+		i = enum.each(func(cursor int) {
+			f(cursor, uint(seq[cursor]))
+		})
+	case func(int, uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, uint(seq[cursor]))
+		})
 	case func(interface{}, uint8):
 		i = enum.each(func(cursor int) {
 			f(cursor, seq[cursor])
@@ -1747,6 +1871,10 @@ func eachUint8Slice(enum *Enumerator, seq []uint8) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan uint:
+		i = enum.each(func(cursor int) {
+			f <- uint(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -1758,6 +1886,13 @@ func eachUint8Slice(enum *Enumerator, seq []uint8) (i int) {
 	case []chan uint8:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan uint:
+		i = enum.each(func(cursor int) {
+			v := uint(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -1799,6 +1934,22 @@ func eachUint16Slice(enum *Enumerator, seq []uint16) (i int) {
 	case func(int, uint16) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(uint):
+		i = enum.each(func(cursor int) {
+			f(uint(seq[cursor]))
+		})
+	case func(uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(uint(seq[cursor]))
+		})
+	case func(int, uint):
+		i = enum.each(func(cursor int) {
+			f(cursor, uint(seq[cursor]))
+		})
+	case func(int, uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, uint(seq[cursor]))
 		})
 	case func(interface{}, uint16):
 		i = enum.each(func(cursor int) {
@@ -1868,6 +2019,10 @@ func eachUint16Slice(enum *Enumerator, seq []uint16) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan uint:
+		i = enum.each(func(cursor int) {
+			f <- uint(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -1879,6 +2034,13 @@ func eachUint16Slice(enum *Enumerator, seq []uint16) (i int) {
 	case []chan uint16:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan uint:
+		i = enum.each(func(cursor int) {
+			v := uint(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -1920,6 +2082,22 @@ func eachUint32Slice(enum *Enumerator, seq []uint32) (i int) {
 	case func(int, uint32) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(uint):
+		i = enum.each(func(cursor int) {
+			f(uint(seq[cursor]))
+		})
+	case func(uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(uint(seq[cursor]))
+		})
+	case func(int, uint):
+		i = enum.each(func(cursor int) {
+			f(cursor, uint(seq[cursor]))
+		})
+	case func(int, uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, uint(seq[cursor]))
 		})
 	case func(interface{}, uint32):
 		i = enum.each(func(cursor int) {
@@ -1989,6 +2167,10 @@ func eachUint32Slice(enum *Enumerator, seq []uint32) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan uint:
+		i = enum.each(func(cursor int) {
+			f <- uint(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -2000,6 +2182,13 @@ func eachUint32Slice(enum *Enumerator, seq []uint32) (i int) {
 	case []chan uint32:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan uint:
+		i = enum.each(func(cursor int) {
+			v := uint(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -2041,6 +2230,22 @@ func eachUint64Slice(enum *Enumerator, seq []uint64) (i int) {
 	case func(int, uint64) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(uint):
+		i = enum.each(func(cursor int) {
+			f(uint(seq[cursor]))
+		})
+	case func(uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(uint(seq[cursor]))
+		})
+	case func(int, uint):
+		i = enum.each(func(cursor int) {
+			f(cursor, uint(seq[cursor]))
+		})
+	case func(int, uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, uint(seq[cursor]))
 		})
 	case func(interface{}, uint64):
 		i = enum.each(func(cursor int) {
@@ -2110,6 +2315,10 @@ func eachUint64Slice(enum *Enumerator, seq []uint64) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan uint:
+		i = enum.each(func(cursor int) {
+			f <- uint(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -2121,6 +2330,13 @@ func eachUint64Slice(enum *Enumerator, seq []uint64) (i int) {
 	case []chan uint64:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan uint:
+		i = enum.each(func(cursor int) {
+			v := uint(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}
@@ -2162,6 +2378,22 @@ func eachUintptrSlice(enum *Enumerator, seq []uintptr) (i int) {
 	case func(int, uintptr) bool:
 		i = enum.each(func(cursor int) bool {
 			return f(cursor, seq[cursor])
+		})
+	case func(uint):
+		i = enum.each(func(cursor int) {
+			f(uint(seq[cursor]))
+		})
+	case func(uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(uint(seq[cursor]))
+		})
+	case func(int, uint):
+		i = enum.each(func(cursor int) {
+			f(cursor, uint(seq[cursor]))
+		})
+	case func(int, uint) bool:
+		i = enum.each(func(cursor int) bool {
+			return f(cursor, uint(seq[cursor]))
 		})
 	case func(interface{}, uintptr):
 		i = enum.each(func(cursor int) {
@@ -2231,6 +2463,10 @@ func eachUintptrSlice(enum *Enumerator, seq []uintptr) (i int) {
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
 		})
+	case chan uint:
+		i = enum.each(func(cursor int) {
+			f <- uint(seq[cursor])
+		})
 	case chan interface{}:
 		i = enum.each(func(cursor int) {
 			f <- seq[cursor]
@@ -2242,6 +2478,13 @@ func eachUintptrSlice(enum *Enumerator, seq []uintptr) (i int) {
 	case []chan uintptr:
 		i = enum.each(func(cursor int) {
 			v := seq[cursor]
+			for _, c := range f {
+				c <- v
+			}
+		})
+	case []chan uint:
+		i = enum.each(func(cursor int) {
+			v := uint(seq[cursor])
 			for _, c := range f {
 				c <- v
 			}

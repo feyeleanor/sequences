@@ -315,6 +315,26 @@ func TestEnumerateSlice(t *testing.T) {
 				}
 				count++
 			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v int) {
+				offset := sliceOffset(s, count, span)
+				if int8(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v int) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case int8(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		case []int16:
 			count = 0
 			ConfirmSliceEachBy(t, s, span, func(v int16) {
@@ -331,6 +351,26 @@ func TestEnumerateSlice(t *testing.T) {
 				case i != offset:
 					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
 				case v != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v int) {
+				offset := sliceOffset(s, count, span)
+				if int16(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v int) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case int16(v) != AtOffset(s, i):
 					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
 				}
 				count++
@@ -355,6 +395,26 @@ func TestEnumerateSlice(t *testing.T) {
 				}
 				count++
 			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v int) {
+				offset := sliceOffset(s, count, span)
+				if int32(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v int) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case int32(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		case []int64:
 			count = 0
 			ConfirmSliceEachBy(t, s, span, func(v int64) {
@@ -371,6 +431,26 @@ func TestEnumerateSlice(t *testing.T) {
 				case i != offset:
 					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
 				case v != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v int) {
+				offset := sliceOffset(s, count, span)
+				if int64(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v int) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case int64(v) != AtOffset(s, i):
 					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
 				}
 				count++
@@ -435,6 +515,26 @@ func TestEnumerateSlice(t *testing.T) {
 				}
 				count++
 			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v uint) {
+				offset := sliceOffset(s, count, span)
+				if uint8(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v uint) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uint8(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		case []uint16:
 			count = 0
 			ConfirmSliceEachBy(t, s, span, func(v uint16) {
@@ -451,6 +551,26 @@ func TestEnumerateSlice(t *testing.T) {
 				case i != offset:
 					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
 				case v != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v uint) {
+				offset := sliceOffset(s, count, span)
+				if uint16(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v uint) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uint16(v) != AtOffset(s, i):
 					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
 				}
 				count++
@@ -475,6 +595,26 @@ func TestEnumerateSlice(t *testing.T) {
 				}
 				count++
 			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v uint) {
+				offset := sliceOffset(s, count, span)
+				if uint32(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v uint) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uint32(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		case []uint64:
 			count = 0
 			ConfirmSliceEachBy(t, s, span, func(v uint64) {
@@ -495,6 +635,26 @@ func TestEnumerateSlice(t *testing.T) {
 				}
 				count++
 			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v uint) {
+				offset := sliceOffset(s, count, span)
+				if uint64(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v uint) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uint64(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		case []uintptr:
 			count = 0
 			ConfirmSliceEachBy(t, s, span, func(v uintptr) {
@@ -511,6 +671,26 @@ func TestEnumerateSlice(t *testing.T) {
 				case i != offset:
 					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
 				case v != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v uint) {
+				offset := sliceOffset(s, count, span)
+				if uintptr(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v uint) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uintptr(v) != AtOffset(s, i):
 					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
 				}
 				count++
