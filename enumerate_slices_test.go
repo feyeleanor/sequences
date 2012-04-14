@@ -732,6 +732,7 @@ func TestEnumerateSlice(t *testing.T) {
 	for i, sequence := range sequences {
 		t.Logf("%v: Write failing test case for span < 0", i)
 		t.Logf("%v: Write test case for span 0", i)
+		t.Logf("%v: Write test cases for channels", i)
 		for j := Len(sequence) * 3; j > 0; j-- {
 			ConfirmEach(sequence, j)
 		}

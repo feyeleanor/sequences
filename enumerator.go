@@ -271,19 +271,19 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceIndexable(enum, seq)
 	case []bool:
 		r = reduceBoolSlice(enum, seq)
-/*	case []complex64:
+	case []complex64:
 		r = reduceComplex64Slice(enum, seq)
 	case []complex128:
 		r = reduceComplex128Slice(enum, seq)
-	case []error:
+/*	case []error:
 		r = reduceErrorSlice(enum, seq)
-	case []float32:
+*/	case []float32:
 		r = reduceFloat32Slice(enum, seq)
 	case []float64:
 		r = reduceFloat64Slice(enum, seq)
-*/	case []int:
+	case []int:
 		r = reduceIntSlice(enum, seq)
-/*	case []int8:
+	case []int8:
 		r = reduceInt8Slice(enum, seq)
 	case []int16:
 		r = reduceInt16Slice(enum, seq)
@@ -291,11 +291,11 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceInt32Slice(enum, seq)
 	case []int64:
 		r = reduceInt64Slice(enum, seq)
-	case []interface{}:
+/*	case []interface{}:
 		r = reduceInterfaceSlice(enum, seq)
 	case []string:
 		r = reduceStringSlice(enum, seq)
-	case []uint:
+*/	case []uint:
 		r = reduceUintSlice(enum, seq)
 	case []uint8:
 		r = reduceUint8Slice(enum, seq)
@@ -307,7 +307,7 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceUint64Slice(enum, seq)
 	case []uintptr:
 		r = reduceUintptrSlice(enum, seq)
-	case []R.Value:
+/*	case []R.Value:
 		r = reduceRValueSlice(enum, seq)
 	case chan bool:
 		if enum.Span < 1 {
