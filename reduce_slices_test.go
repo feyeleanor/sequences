@@ -508,7 +508,7 @@ func TestReduceInterface(t *testing.T) {
 		defer reportReductionError(t, o, seed)
 		for n, f := range iterators {
 			if v := Reduce(o, seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, result, v, v)
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
 			}
 		}
 	}
@@ -570,7 +570,7 @@ func TestReduceStringSlice(t *testing.T) {
 		defer reportReductionError(t, o, seed)
 		for n, f := range iterators {
 			if v := Reduce(o, seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, result, v, v)
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
 			}
 		}
 	}
@@ -824,4 +824,100 @@ func TestReduceUintptrSlice(t *testing.T) {
 	ConfirmReduce([]uintptr{1, 2, 3}, 10, 16)
 	ConfirmReduce([]uintptr{1, 2, 3, 4}, 0, 10)
 	ConfirmReduce([]uintptr{1, 2, 3, 4}, 10, 20)
+}
+
+func TestReduceRSlice(t *testing.T) {
+	iterators := []interface{}{
+		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed, index, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed, v int) int { return seed + v },
+		func(seed int, index int, v int) int { return seed + v },
+		func(seed int, index interface{}, v int) int { return seed + v },
+		func(seed, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+	}
+
+	ConfirmReduceInterfaceSeed := func(o, seed, result interface{}) {
+		defer reportReductionError(t, o, seed)
+		for n, f := range iterators {
+			if v := Reduce(o, seed, f); v.(R.Value).Interface() != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v.(R.Value).Interface())
+			}
+		}
+	}
+
+	ConfirmReduceValueSeed := func(o interface{}, seed, result R.Value) {
+		defer reportReductionError(t, o, seed)
+		for n, f := range iterators {
+			if v := Reduce(o, seed, f); v.(R.Value).Interface() != result.Interface() {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result.Interface(), v.(R.Value).Interface())
+			}
+		}
+	}
+
+	ConfirmReduceInterfaceSeed([]R.Value{}, 0, 0)
+	ConfirmReduceInterfaceSeed([]R.Value{}, 10, 10)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(0)}, 0, 0)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(0)}, 10, 10)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1)}, 0, 1)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1)}, 10, 11)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 0, 3)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 10, 13)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 0, 6)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 10, 16)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 0, 10)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 10, 20)
+
+	ConfirmReduceValueSeed([]R.Value{}, R.ValueOf(0), R.ValueOf(0))
+	ConfirmReduceValueSeed([]R.Value{}, R.ValueOf(10), R.ValueOf(10))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(0)}, R.ValueOf(0), R.ValueOf(0))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(0)}, R.ValueOf(10), R.ValueOf(10))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1)}, R.ValueOf(0), R.ValueOf(1))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1)}, R.ValueOf(10), R.ValueOf(11))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, R.ValueOf(0), R.ValueOf(3))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, R.ValueOf(10), R.ValueOf(13))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, R.ValueOf(0), R.ValueOf(6))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, R.ValueOf(10), R.ValueOf(16))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, R.ValueOf(0), R.ValueOf(10))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, R.ValueOf(10), R.ValueOf(20))
+
+	iterators = []interface{}{
+		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed, index, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed, v bool) bool { return seed && v },
+		func(seed bool, index int, v bool) bool { return seed && v },
+		func(seed bool, index interface{}, v bool) bool { return seed && v },
+		func(seed, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+	}
+
+	ConfirmReduceInterfaceSeed([]R.Value{}, false, false)
+	ConfirmReduceInterfaceSeed([]R.Value{}, true, true)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false)}, false, false)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false)}, true, false)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true)}, false, false)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true)}, true, true)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false), R.ValueOf(true)}, true, false)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(false)}, true, false)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true)}, true, true)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(true)}, true, true)
+	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(false), R.ValueOf(true)}, true, false)
+	
+	ConfirmReduceValueSeed([]R.Value{}, R.ValueOf(false), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{}, R.ValueOf(true), R.ValueOf(true))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false)}, R.ValueOf(false), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false)}, R.ValueOf(true), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true)}, R.ValueOf(false), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true)}, R.ValueOf(true), R.ValueOf(true))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false), R.ValueOf(true)}, R.ValueOf(true), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(false)}, R.ValueOf(true), R.ValueOf(false))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true)}, R.ValueOf(true), R.ValueOf(true))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(true)}, R.ValueOf(true), R.ValueOf(true))
+	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(false), R.ValueOf(true)}, R.ValueOf(true), R.ValueOf(false))
 }

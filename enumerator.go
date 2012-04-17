@@ -307,9 +307,9 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceUint64Slice(enum, seq)
 	case []uintptr:
 		r = reduceUintptrSlice(enum, seq)
-/*	case []R.Value:
+	case []R.Value:
 		r = reduceRValueSlice(enum, seq)
-	case chan bool:
+/*	case chan bool:
 		if enum.Span < 1 {
 			panic(ASCENDING_SEQUENCE)
 		} else {
