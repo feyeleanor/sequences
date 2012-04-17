@@ -275,9 +275,9 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceComplex64Slice(enum, seq)
 	case []complex128:
 		r = reduceComplex128Slice(enum, seq)
-/*	case []error:
+	case []error:
 		r = reduceErrorSlice(enum, seq)
-*/	case []float32:
+	case []float32:
 		r = reduceFloat32Slice(enum, seq)
 	case []float64:
 		r = reduceFloat64Slice(enum, seq)

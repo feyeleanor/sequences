@@ -184,6 +184,43 @@ func TestReduceComplex128Slice(t *testing.T) {
 	ConfirmReduce([]complex128{1, 2, 3, 4}, 10, 20)
 }
 
+func TestReduceErrorSlice(t *testing.T) {
+	iterators := []interface{}{
+		func(seed, v error) error { return seed.(Error) | v.(Error) },
+		func(seed error, index int, v error) error { return seed.(Error) | v.(Error) },
+		func(seed error, index interface{}, v error) error { return seed.(Error) | v.(Error) },
+		func(seed, v interface{}) interface{} { return seed.(Error) | v.(Error) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(Error) | v.(Error) },
+		func(seed, index, v interface{}) interface{} { return seed.(Error) | v.(Error) },
+		func(seed, v R.Value) R.Value { return R.ValueOf(seed.Interface().(Error) | v.Interface().(Error)) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(seed.Interface().(Error) | v.Interface().(Error)) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(seed.Interface().(Error) | v.Interface().(Error)) },
+		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Interface().(Error) | v.Interface().(Error)) },
+	}
+
+	ConfirmReduce := func(o, seed, result interface{}) {
+		defer reportReductionError(t, o, seed)
+		for n, f := range iterators {
+			if v := Reduce(o, seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			}
+		}
+	}
+
+	ConfirmReduce([]error{}, Error(0), Error(0))
+	ConfirmReduce([]error{}, Error(8), Error(8))
+	ConfirmReduce([]error{Error(0)}, Error(0), Error(0))
+	ConfirmReduce([]error{Error(0)}, Error(8), Error(8))
+	ConfirmReduce([]error{Error(1)}, Error(0), Error(1))
+	ConfirmReduce([]error{Error(1)}, Error(8), Error(9))
+	ConfirmReduce([]error{Error(0), Error(1)}, Error(0), Error(1))
+	ConfirmReduce([]error{Error(0), Error(1)}, Error(8), Error(9))
+	ConfirmReduce([]error{Error(0), Error(1), Error(2)}, Error(0), Error(3))
+	ConfirmReduce([]error{Error(0), Error(1), Error(2)}, Error(8), Error(11))
+	ConfirmReduce([]error{Error(0), Error(1), Error(2), Error(4)}, Error(0), Error(7))
+	ConfirmReduce([]error{Error(0), Error(1), Error(2), Error(4)}, Error(8), Error(15))
+}
+
 func TestReduceFloat32Slice(t *testing.T) {
 	iterators := []interface{}{
 		func(seed, v float32) float32 { return seed + v },
@@ -533,7 +570,7 @@ func TestReduceStringSlice(t *testing.T) {
 		defer reportReductionError(t, o, seed)
 		for n, f := range iterators {
 			if v := Reduce(o, seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v [%T] but instead returned %v [%T]", o, seed, n, result, result, v, v)
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, result, v, v)
 			}
 		}
 	}
