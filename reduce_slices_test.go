@@ -515,6 +515,43 @@ func TestReduceInterface(t *testing.T) {
 	ConfirmReduce([]interface{}{true, true, false, true}, true, false)
 }
 
+func TestReduceStringSlice(t *testing.T) {
+	iterators := []interface{}{
+		func(seed, v string) string { return seed + v },
+		func(seed string, index int, v string) string { return seed + v },
+		func(seed string, index interface{}, v string) string { return seed + v },
+		func(seed, v interface{}) interface{} { return seed.(string) + v.(string) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(string) + v.(string) },
+		func(seed, index, v interface{}) interface{} { return seed.(string) + v.(string) },
+		func(seed, v R.Value) R.Value { return R.ValueOf(seed.String() + v.String()) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(seed.String() + v.String()) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(seed.String() + v.String()) },
+		func(seed, index, v R.Value) R.Value { return R.ValueOf(seed.String() + v.String()) },
+	}
+
+	ConfirmReduce := func(o interface{}, seed, result string) {
+		defer reportReductionError(t, o, seed)
+		for n, f := range iterators {
+			if v := Reduce(o, seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v [%T] but instead returned %v [%T]", o, seed, n, result, result, v, v)
+			}
+		}
+	}
+
+	ConfirmReduce([]string{}, "", "")
+	ConfirmReduce([]string{}, "Z", "Z")
+	ConfirmReduce([]string{""}, "", "")
+	ConfirmReduce([]string{""}, "Z", "Z")
+	ConfirmReduce([]string{"A"}, "", "A")
+	ConfirmReduce([]string{"A"}, "Z", "ZA")
+	ConfirmReduce([]string{"A", "B"}, "", "AB")
+	ConfirmReduce([]string{"A", "B"}, "Z", "ZAB")
+	ConfirmReduce([]string{"A", "B", "C"}, "", "ABC")
+	ConfirmReduce([]string{"A", "B", "C"}, "Z", "ZABC")
+	ConfirmReduce([]string{"A", "B", "C", "D"}, "", "ABCD")
+	ConfirmReduce([]string{"A", "B", "C", "D"}, "Z", "ZABCD")
+}
+
 func TestReduceUintSlice(t *testing.T) {
 	iterators := []interface{}{
 		func(seed, v uint) uint { return seed + v },

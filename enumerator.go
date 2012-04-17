@@ -293,9 +293,9 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceInt64Slice(enum, seq)
 	case []interface{}:
 		r = reduceInterfaceSlice(enum, seq)
-/*	case []string:
+	case []string:
 		r = reduceStringSlice(enum, seq)
-*/	case []uint:
+	case []uint:
 		r = reduceUintSlice(enum, seq)
 	case []uint8:
 		r = reduceUint8Slice(enum, seq)

@@ -847,46 +847,47 @@ func reduceInt64Slice(enum *Enumerator, seq []int64) (r int64) {
 }
 
 func reduceInterfaceSlice(enum *Enumerator, seq []interface{}) (r interface{}) {
-	r = enum.seed
 	switch f := enum.f.(type) {
 	case func(interface{}, interface{}) interface{}:
+		r = enum.seed
 		enum.reduce(func(cursor int) {
 			r = f(r, seq[cursor])
 		})
 	case func(interface{}, int, interface{}) interface{}:
+		r = enum.seed
 		enum.reduce(func(cursor int) {
 			r = f(r, cursor, seq[cursor])
 		})
 	case func(interface{}, interface{}, interface{}) interface{}:
+		r = enum.seed
 		enum.reduce(func(cursor int) {
 			r = f(r, cursor, seq[cursor])
 		})
 	case func(R.Value, R.Value) R.Value:
-		rv := R.ValueOf(r)
+		rv := R.ValueOf(enum.seed)
 		enum.reduce(func(cursor int) {
 			rv = f(rv, R.ValueOf(seq[cursor]))
 		})
 		r = rv.Interface()
 	case func(R.Value, int, R.Value) R.Value:
-		rv := R.ValueOf(r)
+		rv := R.ValueOf(enum.seed)
 		enum.reduce(func(cursor int) {
 			rv = f(rv, cursor, R.ValueOf(seq[cursor]))
 		})
 		r = rv.Interface()
 	case func(R.Value, interface{}, R.Value) R.Value:
-		rv := R.ValueOf(r)
+		rv := R.ValueOf(enum.seed)
 		enum.reduce(func(cursor int) {
 			rv = f(rv, cursor, R.ValueOf(seq[cursor]))
 		})
 		r = rv.Interface()
 	case func(R.Value, R.Value, R.Value) R.Value:
-		rv := R.ValueOf(r)
+		rv := R.ValueOf(enum.seed)
 		enum.reduce(func(cursor int) {
 			rv = f(rv, R.ValueOf(cursor), R.ValueOf(seq[cursor]))
 		})
 		r = rv.Interface()
 	default:
-//		panic(UNHANDLED_ITERATOR)
 		if f := R.ValueOf(f); f.Kind() == R.Func {
 			switch f.Type().NumIn() {
 			case 2:
@@ -913,128 +914,70 @@ func reduceInterfaceSlice(enum *Enumerator, seq []interface{}) (r interface{}) {
 	return
 }
 
-/*
-func reduceStringSlice(enum *Enumerator, seq []string) (i int) {
+func reduceStringSlice(enum *Enumerator, seq []string) (r string) {
 	switch f := enum.f.(type) {
-	case func(string):
-		i = enum.reduce(func(cursor int) {
-			f(seq[cursor])
+	case func(string, string) string:
+		r = enum.seed.(string)
+		enum.reduce(func(cursor int) {
+			r = f(r, seq[cursor])
 		})
-	case func(string) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(seq[cursor])
+	case func(string, int, string) string:
+		r = enum.seed.(string)
+		enum.reduce(func(cursor int) {
+			r = f(r, cursor, seq[cursor])
 		})
-	case func(int, string):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, seq[cursor])
+	case func(string, interface{}, string) string:
+		r = enum.seed.(string)
+		enum.reduce(func(cursor int) {
+			r = f(r, cursor, seq[cursor])
 		})
-	case func(int, string) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, seq[cursor])
+	case func(interface{}, interface{}) interface{}:
+		ri := enum.seed
+		enum.reduce(func(cursor int) {
+			ri = f(ri, seq[cursor])
 		})
-	case func(interface{}, string):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, seq[cursor])
+		r = ri.(string)
+	case func(interface{}, int, interface{}) interface{}:
+		ri := enum.seed
+		enum.reduce(func(cursor int) {
+			ri = f(ri, cursor, seq[cursor])
 		})
-	case func(interface{}, string) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, seq[cursor])
+		r = ri.(string)
+	case func(interface{}, interface{}, interface{}) interface{}:
+		ri := enum.seed
+		enum.reduce(func(cursor int) {
+			ri = f(ri, cursor, seq[cursor])
 		})
-	case func(interface{}):
-		i = enum.reduce(func(cursor int) {
-			f(seq[cursor])
+		r = ri.(string)
+	case func(R.Value, R.Value) R.Value:
+		rv := R.ValueOf(enum.seed)
+		enum.reduce(func(cursor int) {
+			rv = f(rv, R.ValueOf(seq[cursor]))
 		})
-	case func(interface{}) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(seq[cursor])
+		r = rv.String()
+	case func(R.Value, int, R.Value) R.Value:
+		rv := R.ValueOf(enum.seed)
+		enum.reduce(func(cursor int) {
+			rv = f(rv, cursor, R.ValueOf(seq[cursor]))
 		})
-	case func(int, interface{}):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, seq[cursor])
+		r = rv.String()
+	case func(R.Value, interface{}, R.Value) R.Value:
+		rv := R.ValueOf(enum.seed)
+		enum.reduce(func(cursor int) {
+			rv = f(rv, cursor, R.ValueOf(seq[cursor]))
 		})
-	case func(int, interface{}) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, seq[cursor])
+		r = rv.String()
+	case func(R.Value, R.Value, R.Value) R.Value:
+		rv := R.ValueOf(enum.seed)
+		enum.reduce(func(cursor int) {
+			rv = f(rv, R.ValueOf(cursor), R.ValueOf(seq[cursor]))
 		})
-	case func(interface{}, interface{}):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, seq[cursor])
-		})
-	case func(interface{}, interface{}) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, seq[cursor])
-		})
-	case func(R.Value):
-		i = enum.reduce(func(cursor int) {
-			f(R.ValueOf(seq[cursor]))
-		})
-	case func(R.Value) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(R.ValueOf(seq[cursor]))
-		})
-	case func(int, R.Value):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, R.ValueOf(seq[cursor]))
-		})
-	case func(int, R.Value) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, R.ValueOf(seq[cursor]))
-		})
-	case func(interface{}, R.Value):
-		i = enum.reduce(func(cursor int) {
-			f(cursor, R.ValueOf(seq[cursor]))
-		})
-	case func(interface{}, R.Value) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(cursor, R.ValueOf(seq[cursor]))
-		})
-	case func(R.Value, R.Value):
-		i = enum.reduce(func(cursor int) {
-			f(R.ValueOf(cursor), R.ValueOf(seq[cursor]))
-		})
-	case func(R.Value, R.Value) bool:
-		i = enum.reduce(func(cursor int) bool {
-			return f(R.ValueOf(cursor), R.ValueOf(seq[cursor]))
-		})
-	case chan string:
-		i = enum.reduce(func(cursor int) {
-			f <- seq[cursor]
-		})
-	case chan interface{}:
-		i = enum.reduce(func(cursor int) {
-			f <- seq[cursor]
-		})
-	case chan R.Value:
-		i = enum.reduce(func(cursor int) {
-			f <- R.ValueOf(seq[cursor])
-		})
-	case []chan string:
-		i = enum.reduce(func(cursor int) {
-			v := seq[cursor]
-			for _, c := range f {
-				c <- v
-			}
-		})
-	case []chan interface{}:
-		i = enum.reduce(func(cursor int) {
-			v := seq[cursor]
-			for _, c := range f {
-				c <- v
-			}
-		})
-	case []chan R.Value:
-		i = enum.reduce(func(cursor int) {
-			v := seq[cursor]
-			for _, c := range f {
-				c <- R.ValueOf(v)
-			}
-		})
+		r = rv.String()
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
 	return
 }
-*/
 
 func reduceUintSlice(enum *Enumerator, seq []uint) (r uint) {
 	switch f := enum.f.(type) {
