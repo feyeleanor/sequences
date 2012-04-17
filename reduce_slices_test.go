@@ -453,6 +453,68 @@ func TestReduceInt64Slice(t *testing.T) {
 	ConfirmReduce([]int64{1, 2, 3, 4}, 10, 20)
 }
 
+func TestReduceInterface(t *testing.T) {
+	iterators := []interface{}{
+		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed, index, v interface{}) interface{} { return seed.(int) + v.(int) },
+		func(seed, v int) int { return seed + v },
+		func(seed int, index int, v int) int { return seed + v },
+		func(seed int, index interface{}, v int) int { return seed + v },
+		func(seed, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
+	}
+
+	ConfirmReduce := func(o interface{}, seed, result interface{}) {
+		defer reportReductionError(t, o, seed)
+		for n, f := range iterators {
+			if v := Reduce(o, seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, result, v, v)
+			}
+		}
+	}
+
+	ConfirmReduce([]interface{}{}, 0, 0)
+	ConfirmReduce([]interface{}{}, 10, 10)
+	ConfirmReduce([]interface{}{0}, 0, 0)
+	ConfirmReduce([]interface{}{0}, 10, 10)
+	ConfirmReduce([]interface{}{1}, 0, 1)
+	ConfirmReduce([]interface{}{1}, 10, 11)
+	ConfirmReduce([]interface{}{1, 2}, 0, 3)
+	ConfirmReduce([]interface{}{1, 2}, 10, 13)
+	ConfirmReduce([]interface{}{1, 2, 3}, 0, 6)
+	ConfirmReduce([]interface{}{1, 2, 3}, 10, 16)
+	ConfirmReduce([]interface{}{1, 2, 3, 4}, 0, 10)
+	ConfirmReduce([]interface{}{1, 2, 3, 4}, 10, 20)
+
+	iterators = []interface{}{
+		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed interface{}, index int, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed, index, v interface{}) interface{} { return seed.(bool) && v.(bool) },
+		func(seed, v bool) bool { return seed && v },
+		func(seed bool, index int, v bool) bool { return seed && v },
+		func(seed bool, index interface{}, v bool) bool { return seed && v },
+		func(seed, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index int, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
+	}
+	
+	ConfirmReduce([]interface{}{}, false, false)
+	ConfirmReduce([]interface{}{}, true, true)
+	ConfirmReduce([]interface{}{false}, false, false)
+	ConfirmReduce([]interface{}{false}, true, false)
+	ConfirmReduce([]interface{}{true}, false, false)
+	ConfirmReduce([]interface{}{true}, true, true)
+	ConfirmReduce([]interface{}{false, true}, true, false)
+	ConfirmReduce([]interface{}{true, false}, true, false)
+	ConfirmReduce([]interface{}{true, true}, true, true)
+	ConfirmReduce([]interface{}{true, true, true}, true, true)
+	ConfirmReduce([]interface{}{true, true, false, true}, true, false)
+}
+
 func TestReduceUintSlice(t *testing.T) {
 	iterators := []interface{}{
 		func(seed, v uint) uint { return seed + v },
