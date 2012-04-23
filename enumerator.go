@@ -309,6 +309,46 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceUintptrSlice(enum, seq)
 	case []R.Value:
 		r = reduceRValueSlice(enum, seq)
+	case func(int) bool:
+		r = reduceBoolFunction(enum, seq)
+	case func(int) complex64:
+		r = reduceComplex64Function(enum, seq)
+	case func(int) complex128:
+		r = reduceComplex128Function(enum, seq)
+	case func(int) error:
+		r = reduceErrorFunction(enum, seq)
+	case func(int) float32:
+		r = reduceFloat32Function(enum, seq)
+	case func(int) float64:
+		r = reduceFloat64Function(enum, seq)
+	case func(int) int:
+		r = reduceIntFunction(enum, seq)
+	case func(int) int8:
+		r = reduceInt8Function(enum, seq)
+	case func(int) int16:
+		r = reduceInt16Function(enum, seq)
+	case func(int) int32:
+		r = reduceInt32Function(enum, seq)
+	case func(int) int64:
+		r = reduceInt64Function(enum, seq)
+	case func(int) interface{}:
+		r = reduceInterfaceFunction(enum, seq)
+	case func(int) string:
+		r = reduceStringFunction(enum, seq)
+	case func(int) uint:
+		r = reduceUintFunction(enum, seq)
+	case func(int) uint8:
+		r = reduceUint8Function(enum, seq)
+	case func(int) uint16:
+		r = reduceUint16Function(enum, seq)
+	case func(int) uint32:
+		r = reduceUint32Function(enum, seq)
+	case func(int) uint64:
+		r = reduceUint64Function(enum, seq)
+	case func(int) uintptr:
+		r = reduceUintptrFunction(enum, seq)
+	case func(int) R.Value:
+		r = reduceRValueFunction(enum, seq)
 /*	case chan bool:
 		if enum.Span < 1 {
 			panic(ASCENDING_SEQUENCE)
@@ -433,35 +473,29 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		switch seq.Kind() {
 		case R.Slice:
 			r = reduceSlice(enum, seq)
+		case R.Func:
+			r = reduceFunction(enum, seq)
 /*		case R.Chan:
 			if enum.Span < 1 {
 				panic(ASCENDING_SEQUENCE)
 			} else {
 				r = reduceChannel(enum, seq)
 			}
-		case R.Func:
-			if isFunctionSequence(seq) {
-				r = reduceFunction(enum, seq)
-			} else {
-				panic(NOT_A_SEQUENCE)
-			}
-*/		default:
+*/		
+		default:
 			switch c := R.ValueOf(seq); c.Kind() {
 			case R.Slice:
 				r = reduceSlice(enum, c)
+			case R.Func:
+				r = reduceFunction(enum, seq)
 /*			case R.Chan:
 				if enum.Span < 1 {
 					panic(ASCENDING_SEQUENCE)
 				} else {
 					r = reduceChannel(enum, c)
 				}
-			case R.Func:
-				if isFunctionSequence(seq) {
-					r = reduceFunction(enum, c)
-				} else {
-					panic(NOT_A_SEQUENCE)
-				}
-*/			}
+*/
+			}
 		}
 	}
 	return

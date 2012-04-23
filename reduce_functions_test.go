@@ -5,13 +5,7 @@ import (
 	"testing"
 )
 
-func reportReductionError(t *testing.T, o, seed interface{}) {
-	if e := recover(); e != nil {
-panic(e)
-		t.Fatalf("Reduce(%v, %v, f) iteration failed with error %v", o, seed, e)
-	}
-}
-
+/*
 func TestReduceIndexable(t *testing.T) {
 	iterators := []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
@@ -75,8 +69,15 @@ func TestReduceIndexable(t *testing.T) {
 	ConfirmReduce(indexable_slice{true, true, true}, true, true)
 	ConfirmReduce(indexable_slice{true, true, false, true}, true, false)
 }
+*/
 
-func TestReduceBoolSlice(t *testing.T) {
+func TestReduceBoolFunction(t *testing.T) {
+	f := func(s ...bool) func(int) bool {
+		return func(index int) bool {
+			return s[index]
+		} 
+	}
+	
 	iterators := []interface{}{
 		func(seed, v bool) bool { return seed && v },
 		func(seed bool, index int, v bool) bool { return seed && v },
@@ -99,20 +100,27 @@ func TestReduceBoolSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]bool{}, false, false)
-	ConfirmReduce([]bool{}, true, true)
-	ConfirmReduce([]bool{false}, false, false)
-	ConfirmReduce([]bool{false}, true, false)
-	ConfirmReduce([]bool{true}, false, false)
-	ConfirmReduce([]bool{true}, true, true)
-	ConfirmReduce([]bool{false, true}, true, false)
-	ConfirmReduce([]bool{true, false}, true, false)
-	ConfirmReduce([]bool{true, true}, true, true)
-	ConfirmReduce([]bool{true, true, true}, true, true)
-	ConfirmReduce([]bool{true, true, false, true}, true, false)
+	ConfirmReduce(f(), false, false)
+	ConfirmReduce(f(), true, true)
+	ConfirmReduce(f(false), false, false)
+	ConfirmReduce(f(false), true, false)
+	ConfirmReduce(f(true), false, false)
+	ConfirmReduce(f(true), true, true)
+	ConfirmReduce(f(false, true), true, false)
+	ConfirmReduce(f(true, false), true, false)
+	ConfirmReduce(f(true, true), true, true)
+	ConfirmReduce(f(true, true, true), true, true)
+	ConfirmReduce(f(true, true, false, true), true, false)
 }
 
-func TestReduceComplex64Slice(t *testing.T) {
+
+func TestReduceComplex64Function(t *testing.T) {
+	f := func(s ...complex64) func(int) complex64 {
+		return func(index int) complex64 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v complex64) complex64 { return seed + v },
 		func(seed complex64, index int, v complex64) complex64 { return seed + v },
@@ -135,20 +143,26 @@ func TestReduceComplex64Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]complex64{}, 0, 0)
-	ConfirmReduce([]complex64{}, 1, 1)
-	ConfirmReduce([]complex64{0}, 0, 0)
-	ConfirmReduce([]complex64{0}, 1, 1)
-	ConfirmReduce([]complex64{1}, 0, 1)
-	ConfirmReduce([]complex64{1}, 1, 2)
-	ConfirmReduce([]complex64{1, 2}, 0, 3)
-	ConfirmReduce([]complex64{1, 2}, 10, 13)
-	ConfirmReduce([]complex64{1, 2, 3}, 0, 6)
-	ConfirmReduce([]complex64{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]complex64{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 1, 1)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 1, 1)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 1, 2)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceComplex128Slice(t *testing.T) {
+func TestReduceComplex128Function(t *testing.T) {
+	f := func(s ...complex128) func(int) complex128 {
+		return func(index int) complex128 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v complex128) complex128 { return seed + v },
 		func(seed complex128, index int, v complex128) complex128 { return seed + v },
@@ -171,20 +185,26 @@ func TestReduceComplex128Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]complex128{}, 0, 0)
-	ConfirmReduce([]complex128{}, 1, 1)
-	ConfirmReduce([]complex128{0}, 0, 0)
-	ConfirmReduce([]complex128{0}, 1, 1)
-	ConfirmReduce([]complex128{1}, 0, 1)
-	ConfirmReduce([]complex128{1}, 1, 2)
-	ConfirmReduce([]complex128{1, 2}, 0, 3)
-	ConfirmReduce([]complex128{1, 2}, 10, 13)
-	ConfirmReduce([]complex128{1, 2, 3}, 0, 6)
-	ConfirmReduce([]complex128{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]complex128{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 1, 1)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 1, 1)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 1, 2)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceErrorSlice(t *testing.T) {
+func TestReduceErrorFunction(t *testing.T) {
+	f := func(s ...error) func(int) error {
+		return func(index int) error {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v error) error { return seed.(Error) | v.(Error) },
 		func(seed error, index int, v error) error { return seed.(Error) | v.(Error) },
@@ -207,21 +227,27 @@ func TestReduceErrorSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]error{}, Error(0), Error(0))
-	ConfirmReduce([]error{}, Error(8), Error(8))
-	ConfirmReduce([]error{Error(0)}, Error(0), Error(0))
-	ConfirmReduce([]error{Error(0)}, Error(8), Error(8))
-	ConfirmReduce([]error{Error(1)}, Error(0), Error(1))
-	ConfirmReduce([]error{Error(1)}, Error(8), Error(9))
-	ConfirmReduce([]error{Error(0), Error(1)}, Error(0), Error(1))
-	ConfirmReduce([]error{Error(0), Error(1)}, Error(8), Error(9))
-	ConfirmReduce([]error{Error(0), Error(1), Error(2)}, Error(0), Error(3))
-	ConfirmReduce([]error{Error(0), Error(1), Error(2)}, Error(8), Error(11))
-	ConfirmReduce([]error{Error(0), Error(1), Error(2), Error(4)}, Error(0), Error(7))
-	ConfirmReduce([]error{Error(0), Error(1), Error(2), Error(4)}, Error(8), Error(15))
+	ConfirmReduce(f(), Error(0), Error(0))
+	ConfirmReduce(f(), Error(8), Error(8))
+	ConfirmReduce(f(Error(0)), Error(0), Error(0))
+	ConfirmReduce(f(Error(0)), Error(8), Error(8))
+	ConfirmReduce(f(Error(1)), Error(0), Error(1))
+	ConfirmReduce(f(Error(1)), Error(8), Error(9))
+	ConfirmReduce(f(Error(0), Error(1)), Error(0), Error(1))
+	ConfirmReduce(f(Error(0), Error(1)), Error(8), Error(9))
+	ConfirmReduce(f(Error(0), Error(1), Error(2)), Error(0), Error(3))
+	ConfirmReduce(f(Error(0), Error(1), Error(2)), Error(8), Error(11))
+	ConfirmReduce(f(Error(0), Error(1), Error(2), Error(4)), Error(0), Error(7))
+	ConfirmReduce(f(Error(0), Error(1), Error(2), Error(4)), Error(8), Error(15))
 }
 
-func TestReduceFloat32Slice(t *testing.T) {
+func TestReduceFloat32Function(t *testing.T) {
+	f := func(s ...float32) func(int) float32 {
+		return func(index int) float32 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v float32) float32 { return seed + v },
 		func(seed float32, index int, v float32) float32 { return seed + v },
@@ -244,20 +270,26 @@ func TestReduceFloat32Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]float32{}, 0, 0)
-	ConfirmReduce([]float32{}, 1, 1)
-	ConfirmReduce([]float32{0}, 0, 0)
-	ConfirmReduce([]float32{0}, 1, 1)
-	ConfirmReduce([]float32{1}, 0, 1)
-	ConfirmReduce([]float32{1}, 1, 2)
-	ConfirmReduce([]float32{1, 2}, 0, 3)
-	ConfirmReduce([]float32{1, 2}, 10, 13)
-	ConfirmReduce([]float32{1, 2, 3}, 0, 6)
-	ConfirmReduce([]float32{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]float32{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 1, 1)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 1, 1)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 1, 2)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceFloat64Slice(t *testing.T) {
+func TestReduceFloat64Function(t *testing.T) {
+	f := func(s ...float64) func(int) float64 {
+		return func(index int) float64 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v float64) float64 { return seed + v },
 		func(seed float64, index int, v float64) float64 { return seed + v },
@@ -280,20 +312,26 @@ func TestReduceFloat64Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]float64{}, 0, 0)
-	ConfirmReduce([]float64{}, 1, 1)
-	ConfirmReduce([]float64{0}, 0, 0)
-	ConfirmReduce([]float64{0}, 1, 1)
-	ConfirmReduce([]float64{1}, 0, 1)
-	ConfirmReduce([]float64{1}, 1, 2)
-	ConfirmReduce([]float64{1, 2}, 0, 3)
-	ConfirmReduce([]float64{1, 2}, 10, 13)
-	ConfirmReduce([]float64{1, 2, 3}, 0, 6)
-	ConfirmReduce([]float64{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]float64{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 1, 1)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 1, 1)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 1, 2)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceIntSlice(t *testing.T) {
+func TestReduceIntFunction(t *testing.T) {
+	f := func(s ...int) func(int) int {
+		return func(index int) int {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v int) int { return seed + v },
 		func(seed int, index int, v int) int { return seed + v },
@@ -316,21 +354,27 @@ func TestReduceIntSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]int{}, 0, 0)
-	ConfirmReduce([]int{}, 10, 10)
-	ConfirmReduce([]int{0}, 0, 0)
-	ConfirmReduce([]int{0}, 10, 10)
-	ConfirmReduce([]int{1}, 0, 1)
-	ConfirmReduce([]int{1}, 10, 11)
-	ConfirmReduce([]int{1, 2}, 0, 3)
-	ConfirmReduce([]int{1, 2}, 10, 13)
-	ConfirmReduce([]int{1, 2, 3}, 0, 6)
-	ConfirmReduce([]int{1, 2, 3}, 10, 16)
-	ConfirmReduce([]int{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]int{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceInt8Slice(t *testing.T) {
+func TestReduceInt8Function(t *testing.T) {
+	f := func(s ...int8) func(int) int8 {
+		return func(index int) int8 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v int8) int8 { return seed + v },
 		func(seed int8, index int, v int8) int8 { return seed + v },
@@ -356,21 +400,27 @@ func TestReduceInt8Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]int8{}, 0, 0)
-	ConfirmReduce([]int8{}, 10, 10)
-	ConfirmReduce([]int8{0}, 0, 0)
-	ConfirmReduce([]int8{0}, 10, 10)
-	ConfirmReduce([]int8{1}, 0, 1)
-	ConfirmReduce([]int8{1}, 10, 11)
-	ConfirmReduce([]int8{1, 2}, 0, 3)
-	ConfirmReduce([]int8{1, 2}, 10, 13)
-	ConfirmReduce([]int8{1, 2, 3}, 0, 6)
-	ConfirmReduce([]int8{1, 2, 3}, 10, 16)
-	ConfirmReduce([]int8{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]int8{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceInt16Slice(t *testing.T) {
+func TestReduceInt16Function(t *testing.T) {
+	f := func(s ...int16) func(int) int16 {
+		return func(index int) int16 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v int16) int16 { return seed + v },
 		func(seed int16, index int, v int16) int16 { return seed + v },
@@ -396,21 +446,27 @@ func TestReduceInt16Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]int16{}, 0, 0)
-	ConfirmReduce([]int16{}, 10, 10)
-	ConfirmReduce([]int16{0}, 0, 0)
-	ConfirmReduce([]int16{0}, 10, 10)
-	ConfirmReduce([]int16{1}, 0, 1)
-	ConfirmReduce([]int16{1}, 10, 11)
-	ConfirmReduce([]int16{1, 2}, 0, 3)
-	ConfirmReduce([]int16{1, 2}, 10, 13)
-	ConfirmReduce([]int16{1, 2, 3}, 0, 6)
-	ConfirmReduce([]int16{1, 2, 3}, 10, 16)
-	ConfirmReduce([]int16{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]int16{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceInt32Slice(t *testing.T) {
+func TestReduceInt32Function(t *testing.T) {
+	f := func(s ...int32) func(int) int32 {
+		return func(index int) int32 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v int32) int32 { return seed + v },
 		func(seed int32, index int, v int32) int32 { return seed + v },
@@ -436,21 +492,27 @@ func TestReduceInt32Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]int32{}, 0, 0)
-	ConfirmReduce([]int32{}, 10, 10)
-	ConfirmReduce([]int32{0}, 0, 0)
-	ConfirmReduce([]int32{0}, 10, 10)
-	ConfirmReduce([]int32{1}, 0, 1)
-	ConfirmReduce([]int32{1}, 10, 11)
-	ConfirmReduce([]int32{1, 2}, 0, 3)
-	ConfirmReduce([]int32{1, 2}, 10, 13)
-	ConfirmReduce([]int32{1, 2, 3}, 0, 6)
-	ConfirmReduce([]int32{1, 2, 3}, 10, 16)
-	ConfirmReduce([]int32{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]int32{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceInt64Slice(t *testing.T) {
+func TestReduceInt64Function(t *testing.T) {
+	f := func(s ...int64) func(int) int64 {
+		return func(index int) int64 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v int64) int64 { return seed + v },
 		func(seed int64, index int, v int64) int64 { return seed + v },
@@ -476,21 +538,27 @@ func TestReduceInt64Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]int64{}, 0, 0)
-	ConfirmReduce([]int64{}, 10, 10)
-	ConfirmReduce([]int64{0}, 0, 0)
-	ConfirmReduce([]int64{0}, 10, 10)
-	ConfirmReduce([]int64{1}, 0, 1)
-	ConfirmReduce([]int64{1}, 10, 11)
-	ConfirmReduce([]int64{1, 2}, 0, 3)
-	ConfirmReduce([]int64{1, 2}, 10, 13)
-	ConfirmReduce([]int64{1, 2, 3}, 0, 6)
-	ConfirmReduce([]int64{1, 2, 3}, 10, 16)
-	ConfirmReduce([]int64{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]int64{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceInterfaceSlice(t *testing.T) {
+func TestReduceInterfaceFunction(t *testing.T) {
+	f := func(s ...interface{}) func(int) interface{} {
+		return func(index int) interface{} {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
 		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
@@ -513,18 +581,18 @@ func TestReduceInterfaceSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]interface{}{}, 0, 0)
-	ConfirmReduce([]interface{}{}, 10, 10)
-	ConfirmReduce([]interface{}{0}, 0, 0)
-	ConfirmReduce([]interface{}{0}, 10, 10)
-	ConfirmReduce([]interface{}{1}, 0, 1)
-	ConfirmReduce([]interface{}{1}, 10, 11)
-	ConfirmReduce([]interface{}{1, 2}, 0, 3)
-	ConfirmReduce([]interface{}{1, 2}, 10, 13)
-	ConfirmReduce([]interface{}{1, 2, 3}, 0, 6)
-	ConfirmReduce([]interface{}{1, 2, 3}, 10, 16)
-	ConfirmReduce([]interface{}{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]interface{}{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -539,20 +607,26 @@ func TestReduceInterfaceSlice(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 	
-	ConfirmReduce([]interface{}{}, false, false)
-	ConfirmReduce([]interface{}{}, true, true)
-	ConfirmReduce([]interface{}{false}, false, false)
-	ConfirmReduce([]interface{}{false}, true, false)
-	ConfirmReduce([]interface{}{true}, false, false)
-	ConfirmReduce([]interface{}{true}, true, true)
-	ConfirmReduce([]interface{}{false, true}, true, false)
-	ConfirmReduce([]interface{}{true, false}, true, false)
-	ConfirmReduce([]interface{}{true, true}, true, true)
-	ConfirmReduce([]interface{}{true, true, true}, true, true)
-	ConfirmReduce([]interface{}{true, true, false, true}, true, false)
+	ConfirmReduce(f(), false, false)
+	ConfirmReduce(f(), true, true)
+	ConfirmReduce(f(false), false, false)
+	ConfirmReduce(f(false), true, false)
+	ConfirmReduce(f(true), false, false)
+	ConfirmReduce(f(true), true, true)
+	ConfirmReduce(f(false, true), true, false)
+	ConfirmReduce(f(true, false), true, false)
+	ConfirmReduce(f(true, true), true, true)
+	ConfirmReduce(f(true, true, true), true, true)
+	ConfirmReduce(f(true, true, false, true), true, false)
 }
 
-func TestReduceStringSlice(t *testing.T) {
+func TestReduceStringFunction(t *testing.T) {
+	f := func(s ...string) func(int) string {
+		return func(index int) string {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v string) string { return seed + v },
 		func(seed string, index int, v string) string { return seed + v },
@@ -575,21 +649,27 @@ func TestReduceStringSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]string{}, "", "")
-	ConfirmReduce([]string{}, "Z", "Z")
-	ConfirmReduce([]string{""}, "", "")
-	ConfirmReduce([]string{""}, "Z", "Z")
-	ConfirmReduce([]string{"A"}, "", "A")
-	ConfirmReduce([]string{"A"}, "Z", "ZA")
-	ConfirmReduce([]string{"A", "B"}, "", "AB")
-	ConfirmReduce([]string{"A", "B"}, "Z", "ZAB")
-	ConfirmReduce([]string{"A", "B", "C"}, "", "ABC")
-	ConfirmReduce([]string{"A", "B", "C"}, "Z", "ZABC")
-	ConfirmReduce([]string{"A", "B", "C", "D"}, "", "ABCD")
-	ConfirmReduce([]string{"A", "B", "C", "D"}, "Z", "ZABCD")
+	ConfirmReduce(f(), "", "")
+	ConfirmReduce(f(), "Z", "Z")
+	ConfirmReduce(f(""), "", "")
+	ConfirmReduce(f(""), "Z", "Z")
+	ConfirmReduce(f("A"), "", "A")
+	ConfirmReduce(f("A"), "Z", "ZA")
+	ConfirmReduce(f("A", "B"), "", "AB")
+	ConfirmReduce(f("A", "B"), "Z", "ZAB")
+	ConfirmReduce(f("A", "B", "C"), "", "ABC")
+	ConfirmReduce(f("A", "B", "C"), "Z", "ZABC")
+	ConfirmReduce(f("A", "B", "C", "D"), "", "ABCD")
+	ConfirmReduce(f("A", "B", "C", "D"), "Z", "ZABCD")
 }
 
-func TestReduceUintSlice(t *testing.T) {
+func TestReduceUintFunction(t *testing.T) {
+	f := func(s ...uint) func(int) uint {
+		return func(index int) uint {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uint) uint { return seed + v },
 		func(seed uint, index int, v uint) uint { return seed + v },
@@ -612,21 +692,27 @@ func TestReduceUintSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uint{}, 0, 0)
-	ConfirmReduce([]uint{}, 10, 10)
-	ConfirmReduce([]uint{0}, 0, 0)
-	ConfirmReduce([]uint{0}, 10, 10)
-	ConfirmReduce([]uint{1}, 0, 1)
-	ConfirmReduce([]uint{1}, 10, 11)
-	ConfirmReduce([]uint{1, 2}, 0, 3)
-	ConfirmReduce([]uint{1, 2}, 10, 13)
-	ConfirmReduce([]uint{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uint{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uint{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uint{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceUint8Slice(t *testing.T) {
+func TestReduceUint8Function(t *testing.T) {
+	f := func(s ...uint8) func(int) uint8 {
+		return func(index int) uint8 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uint8) uint8 { return seed + v },
 		func(seed uint8, index int, v uint8) uint8 { return seed + v },
@@ -652,21 +738,27 @@ func TestReduceUint8Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uint8{}, 0, 0)
-	ConfirmReduce([]uint8{}, 10, 10)
-	ConfirmReduce([]uint8{0}, 0, 0)
-	ConfirmReduce([]uint8{0}, 10, 10)
-	ConfirmReduce([]uint8{1}, 0, 1)
-	ConfirmReduce([]uint8{1}, 10, 11)
-	ConfirmReduce([]uint8{1, 2}, 0, 3)
-	ConfirmReduce([]uint8{1, 2}, 10, 13)
-	ConfirmReduce([]uint8{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uint8{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uint8{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uint8{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceUint16Slice(t *testing.T) {
+func TestReduceUint16Function(t *testing.T) {
+	f := func(s ...uint16) func(int) uint16 {
+		return func(index int) uint16 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uint16) uint16 { return seed + v },
 		func(seed uint16, index int, v uint16) uint16 { return seed + v },
@@ -692,21 +784,27 @@ func TestReduceUint16Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uint16{}, 0, 0)
-	ConfirmReduce([]uint16{}, 10, 10)
-	ConfirmReduce([]uint16{0}, 0, 0)
-	ConfirmReduce([]uint16{0}, 10, 10)
-	ConfirmReduce([]uint16{1}, 0, 1)
-	ConfirmReduce([]uint16{1}, 10, 11)
-	ConfirmReduce([]uint16{1, 2}, 0, 3)
-	ConfirmReduce([]uint16{1, 2}, 10, 13)
-	ConfirmReduce([]uint16{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uint16{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uint16{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uint16{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceUint32Slice(t *testing.T) {
+func TestReduceUint32Function(t *testing.T) {
+	f := func(s ...uint32) func(int) uint32 {
+		return func(index int) uint32 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uint32) uint32 { return seed + v },
 		func(seed uint32, index int, v uint32) uint32 { return seed + v },
@@ -732,21 +830,27 @@ func TestReduceUint32Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uint32{}, 0, 0)
-	ConfirmReduce([]uint32{}, 10, 10)
-	ConfirmReduce([]uint32{0}, 0, 0)
-	ConfirmReduce([]uint32{0}, 10, 10)
-	ConfirmReduce([]uint32{1}, 0, 1)
-	ConfirmReduce([]uint32{1}, 10, 11)
-	ConfirmReduce([]uint32{1, 2}, 0, 3)
-	ConfirmReduce([]uint32{1, 2}, 10, 13)
-	ConfirmReduce([]uint32{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uint32{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uint32{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uint32{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceUint64Slice(t *testing.T) {
+func TestReduceUint64Function(t *testing.T) {
+	f := func(s ...uint64) func(int) uint64 {
+		return func(index int) uint64 {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uint64) uint64 { return seed + v },
 		func(seed uint64, index int, v uint64) uint64 { return seed + v },
@@ -772,21 +876,27 @@ func TestReduceUint64Slice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uint64{}, 0, 0)
-	ConfirmReduce([]uint64{}, 10, 10)
-	ConfirmReduce([]uint64{0}, 0, 0)
-	ConfirmReduce([]uint64{0}, 10, 10)
-	ConfirmReduce([]uint64{1}, 0, 1)
-	ConfirmReduce([]uint64{1}, 10, 11)
-	ConfirmReduce([]uint64{1, 2}, 0, 3)
-	ConfirmReduce([]uint64{1, 2}, 10, 13)
-	ConfirmReduce([]uint64{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uint64{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uint64{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uint64{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceUintptrSlice(t *testing.T) {
+func TestReduceUintptrFunction(t *testing.T) {
+	f := func(s ...uintptr) func(int) uintptr {
+		return func(index int) uintptr {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v uintptr) uintptr { return seed + v },
 		func(seed uintptr, index int, v uintptr) uintptr { return seed + v },
@@ -812,21 +922,27 @@ func TestReduceUintptrSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce([]uintptr{}, 0, 0)
-	ConfirmReduce([]uintptr{}, 10, 10)
-	ConfirmReduce([]uintptr{0}, 0, 0)
-	ConfirmReduce([]uintptr{0}, 10, 10)
-	ConfirmReduce([]uintptr{1}, 0, 1)
-	ConfirmReduce([]uintptr{1}, 10, 11)
-	ConfirmReduce([]uintptr{1, 2}, 0, 3)
-	ConfirmReduce([]uintptr{1, 2}, 10, 13)
-	ConfirmReduce([]uintptr{1, 2, 3}, 0, 6)
-	ConfirmReduce([]uintptr{1, 2, 3}, 10, 16)
-	ConfirmReduce([]uintptr{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce([]uintptr{1, 2, 3, 4}, 10, 20)
+	ConfirmReduce(f(), 0, 0)
+	ConfirmReduce(f(), 10, 10)
+	ConfirmReduce(f(0), 0, 0)
+	ConfirmReduce(f(0), 10, 10)
+	ConfirmReduce(f(1), 0, 1)
+	ConfirmReduce(f(1), 10, 11)
+	ConfirmReduce(f(1, 2), 0, 3)
+	ConfirmReduce(f(1, 2), 10, 13)
+	ConfirmReduce(f(1, 2, 3), 0, 6)
+	ConfirmReduce(f(1, 2, 3), 10, 16)
+	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
 }
 
-func TestReduceRSlice(t *testing.T) {
+func TestReduceRValueFunction(t *testing.T) {
+	f := func(s ...interface{}) func(int) R.Value {
+		return func(index int) R.Value {
+			return R.ValueOf(s[index])
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
 		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
@@ -858,31 +974,31 @@ func TestReduceRSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduceInterfaceSeed([]R.Value{}, 0, 0)
-	ConfirmReduceInterfaceSeed([]R.Value{}, 10, 10)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(0)}, 0, 0)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(0)}, 10, 10)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1)}, 0, 1)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1)}, 10, 11)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 0, 3)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 10, 13)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 0, 6)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 10, 16)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 0, 10)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 10, 20)
+	ConfirmReduceInterfaceSeed(f(), 0, 0)
+	ConfirmReduceInterfaceSeed(f(), 10, 10)
+	ConfirmReduceInterfaceSeed(f(0), 0, 0)
+	ConfirmReduceInterfaceSeed(f(0), 10, 10)
+	ConfirmReduceInterfaceSeed(f(1), 0, 1)
+	ConfirmReduceInterfaceSeed(f(1), 10, 11)
+	ConfirmReduceInterfaceSeed(f(1, 2), 0, 3)
+	ConfirmReduceInterfaceSeed(f(1, 2), 10, 13)
+	ConfirmReduceInterfaceSeed(f(1, 2, 3), 0, 6)
+	ConfirmReduceInterfaceSeed(f(1, 2, 3), 10, 16)
+	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 10, 20)
 
-	ConfirmReduceValueSeed([]R.Value{}, 0, 0)
-	ConfirmReduceValueSeed([]R.Value{}, 10, 10)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(0)}, 0, 0)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(0)}, 10, 10)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1)}, 0, 1)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1)}, 10, 11)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 0, 3)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2)}, 10, 13)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 0, 6)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3)}, 10, 16)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 0, 10)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)}, 10, 20)
+	ConfirmReduceValueSeed(f(), 0, 0)
+	ConfirmReduceValueSeed(f(), 10, 10)
+	ConfirmReduceValueSeed(f(0), 0, 0)
+	ConfirmReduceValueSeed(f(0), 10, 10)
+	ConfirmReduceValueSeed(f(1), 0, 1)
+	ConfirmReduceValueSeed(f(1), 10, 11)
+	ConfirmReduceValueSeed(f(1, 2), 0, 3)
+	ConfirmReduceValueSeed(f(1, 2), 10, 13)
+	ConfirmReduceValueSeed(f(1, 2, 3), 0, 6)
+	ConfirmReduceValueSeed(f(1, 2, 3), 10, 16)
+	ConfirmReduceValueSeed(f(1, 2, 3, 4), 0, 10)
+	ConfirmReduceValueSeed(f(1, 2, 3, 4), 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -897,32 +1013,44 @@ func TestReduceRSlice(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 
-	ConfirmReduceInterfaceSeed([]R.Value{}, false, false)
-	ConfirmReduceInterfaceSeed([]R.Value{}, true, true)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false)}, false, false)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false)}, true, false)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true)}, false, false)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true)}, true, true)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(false), R.ValueOf(true)}, true, false)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(false)}, true, false)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true)}, true, true)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(true)}, true, true)
-	ConfirmReduceInterfaceSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(false), R.ValueOf(true)}, true, false)
+	ConfirmReduceInterfaceSeed(f(), false, false)
+	ConfirmReduceInterfaceSeed(f(), true, true)
+	ConfirmReduceInterfaceSeed(f(false), false, false)
+	ConfirmReduceInterfaceSeed(f(false), true, false)
+	ConfirmReduceInterfaceSeed(f(true), false, false)
+	ConfirmReduceInterfaceSeed(f(true), true, true)
+	ConfirmReduceInterfaceSeed(f(false, true), true, false)
+	ConfirmReduceInterfaceSeed(f(true, false), true, false)
+	ConfirmReduceInterfaceSeed(f(true, true), true, true)
+	ConfirmReduceInterfaceSeed(f(true, true, true), true, true)
+	ConfirmReduceInterfaceSeed(f(true, true, false, true), true, false)
 	
-	ConfirmReduceValueSeed([]R.Value{}, false, false)
-	ConfirmReduceValueSeed([]R.Value{}, true, true)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false)}, false, false)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false)}, true, false)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true)}, false, false)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true)}, true, true)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(false), R.ValueOf(true)}, true, false)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(false)}, true, false)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true)}, true, true)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(true)}, true, true)
-	ConfirmReduceValueSeed([]R.Value{R.ValueOf(true), R.ValueOf(true), R.ValueOf(false), R.ValueOf(true)}, true, false)
+	ConfirmReduceValueSeed(f(), false, false)
+	ConfirmReduceValueSeed(f(), true, true)
+	ConfirmReduceValueSeed(f(false), false, false)
+	ConfirmReduceValueSeed(f(false), true, false)
+	ConfirmReduceValueSeed(f(true), false, false)
+	ConfirmReduceValueSeed(f(true), true, true)
+	ConfirmReduceValueSeed(f(false, true), true, false)
+	ConfirmReduceValueSeed(f(true, false), true, false)
+	ConfirmReduceValueSeed(f(true, true), true, true)
+	ConfirmReduceValueSeed(f(true, true, true), true, true)
+	ConfirmReduceValueSeed(f(true, true, false, true), true, false)
 }
 
-func TestReduceSlice(t *testing.T) {
+func TestReduceFunction(t *testing.T) {
+	fi := func(s ...int) func(int) int {
+		return func(index int) int {
+			return s[index]
+		} 
+	}
+
+	fb := func(s ...bool) func(int) bool {
+		return func(index int) bool {
+			return s[index]
+		} 
+	}
+
 	iterators := []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
 		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
@@ -956,31 +1084,31 @@ func TestReduceSlice(t *testing.T) {
 		}
 	}
 
-	ConfirmReduceInterfaceSeed([]int{}, 0, 0)
-	ConfirmReduceInterfaceSeed([]int{}, 10, 10)
-	ConfirmReduceInterfaceSeed([]int{0}, 0, 0)
-	ConfirmReduceInterfaceSeed([]int{0}, 10, 10)
-	ConfirmReduceInterfaceSeed([]int{1}, 0, 1)
-	ConfirmReduceInterfaceSeed([]int{1}, 10, 11)
-	ConfirmReduceInterfaceSeed([]int{1, 2}, 0, 3)
-	ConfirmReduceInterfaceSeed([]int{1, 2}, 10, 13)
-	ConfirmReduceInterfaceSeed([]int{1, 2, 3}, 0, 6)
-	ConfirmReduceInterfaceSeed([]int{1, 2, 3}, 10, 16)
-	ConfirmReduceInterfaceSeed([]int{1, 2, 3, 4}, 0, 10)
-	ConfirmReduceInterfaceSeed([]int{1, 2, 3, 4}, 10, 20)
+	ConfirmReduceInterfaceSeed(fi(), 0, 0)
+	ConfirmReduceInterfaceSeed(fi(), 10, 10)
+	ConfirmReduceInterfaceSeed(fi(0), 0, 0)
+	ConfirmReduceInterfaceSeed(fi(0), 10, 10)
+	ConfirmReduceInterfaceSeed(fi(1), 0, 1)
+	ConfirmReduceInterfaceSeed(fi(1), 10, 11)
+	ConfirmReduceInterfaceSeed(fi(1, 2), 0, 3)
+	ConfirmReduceInterfaceSeed(fi(1, 2), 10, 13)
+	ConfirmReduceInterfaceSeed(fi(1, 2, 3), 0, 6)
+	ConfirmReduceInterfaceSeed(fi(1, 2, 3), 10, 16)
+	ConfirmReduceInterfaceSeed(fi(1, 2, 3, 4), 0, 10)
+	ConfirmReduceInterfaceSeed(fi(1, 2, 3, 4), 10, 20)
 
-	ConfirmReduceValueSeed([]int{}, 0, 0)
-	ConfirmReduceValueSeed([]int{}, 10, 10)
-	ConfirmReduceValueSeed([]int{0}, 0, 0)
-	ConfirmReduceValueSeed([]int{0}, 10, 10)
-	ConfirmReduceValueSeed([]int{1}, 0, 1)
-	ConfirmReduceValueSeed([]int{1}, 10, 11)
-	ConfirmReduceValueSeed([]int{1, 2}, 0, 3)
-	ConfirmReduceValueSeed([]int{1, 2}, 10, 13)
-	ConfirmReduceValueSeed([]int{1, 2, 3}, 0, 6)
-	ConfirmReduceValueSeed([]int{1, 2, 3}, 10, 16)
-	ConfirmReduceValueSeed([]int{1, 2, 3, 4}, 0, 10)
-	ConfirmReduceValueSeed([]int{1, 2, 3, 4}, 10, 20)
+	ConfirmReduceValueSeed(fi(), 0, 0)
+	ConfirmReduceValueSeed(fi(), 10, 10)
+	ConfirmReduceValueSeed(fi(0), 0, 0)
+	ConfirmReduceValueSeed(fi(0), 10, 10)
+	ConfirmReduceValueSeed(fi(1), 0, 1)
+	ConfirmReduceValueSeed(fi(1), 10, 11)
+	ConfirmReduceValueSeed(fi(1, 2), 0, 3)
+	ConfirmReduceValueSeed(fi(1, 2), 10, 13)
+	ConfirmReduceValueSeed(fi(1, 2, 3), 0, 6)
+	ConfirmReduceValueSeed(fi(1, 2, 3), 10, 16)
+	ConfirmReduceValueSeed(fi(1, 2, 3, 4), 0, 10)
+	ConfirmReduceValueSeed(fi(1, 2, 3, 4), 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -995,27 +1123,28 @@ func TestReduceSlice(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 
-	ConfirmReduceInterfaceSeed([]bool{}, false, false)
-	ConfirmReduceInterfaceSeed([]bool{}, true, true)
-	ConfirmReduceInterfaceSeed([]bool{false}, false, false)
-	ConfirmReduceInterfaceSeed([]bool{false}, true, false)
-	ConfirmReduceInterfaceSeed([]bool{true}, false, false)
-	ConfirmReduceInterfaceSeed([]bool{true}, true, true)
-	ConfirmReduceInterfaceSeed([]bool{false, true}, true, false)
-	ConfirmReduceInterfaceSeed([]bool{true, false}, true, false)
-	ConfirmReduceInterfaceSeed([]bool{true, true}, true, true)
-	ConfirmReduceInterfaceSeed([]bool{true, true, true}, true, true)
-	ConfirmReduceInterfaceSeed([]bool{true, true, false, true}, true, false)
+	ConfirmReduceInterfaceSeed(fb(), false, false)
+	ConfirmReduceInterfaceSeed(fb(), true, true)
+	ConfirmReduceInterfaceSeed(fb(false), false, false)
+	ConfirmReduceInterfaceSeed(fb(false), true, false)
+	ConfirmReduceInterfaceSeed(fb(true), false, false)
+	ConfirmReduceInterfaceSeed(fb(true), true, true)
+	ConfirmReduceInterfaceSeed(fb(false, true), true, false)
+	ConfirmReduceInterfaceSeed(fb(true, false), true, false)
+	ConfirmReduceInterfaceSeed(fb(true, true), true, true)
+	ConfirmReduceInterfaceSeed(fb(true, true, true), true, true)
+	ConfirmReduceInterfaceSeed(fb(true, true, false, true), true, false)
 	
-	ConfirmReduceValueSeed([]bool{}, false, false)
-	ConfirmReduceValueSeed([]bool{}, true, true)
-	ConfirmReduceValueSeed([]bool{false}, false, false)
-	ConfirmReduceValueSeed([]bool{false}, true, false)
-	ConfirmReduceValueSeed([]bool{true}, false, false)
-	ConfirmReduceValueSeed([]bool{true}, true, true)
-	ConfirmReduceValueSeed([]bool{false, true}, true, false)
-	ConfirmReduceValueSeed([]bool{true, false}, true, false)
-	ConfirmReduceValueSeed([]bool{true, true}, true, true)
-	ConfirmReduceValueSeed([]bool{true, true, true}, true, true)
-	ConfirmReduceValueSeed([]bool{true, true, false, true}, true, false)
+	ConfirmReduceValueSeed(fb(), false, false)
+	ConfirmReduceValueSeed(fb(), true, true)
+	ConfirmReduceValueSeed(fb(false), false, false)
+	ConfirmReduceValueSeed(fb(false), true, false)
+	ConfirmReduceValueSeed(fb(true), false, false)
+	ConfirmReduceValueSeed(fb(true), true, true)
+	ConfirmReduceValueSeed(fb(false, true), true, false)
+	ConfirmReduceValueSeed(fb(true, false), true, false)
+	ConfirmReduceValueSeed(fb(true, true), true, true)
+	ConfirmReduceValueSeed(fb(true, true, true), true, true)
+	ConfirmReduceValueSeed(fb(true, true, false, true), true, false)
+
 }
