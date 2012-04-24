@@ -1,44 +1,22 @@
 package sequences
 
-func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) (count int, e error) {
-	defer func() {
-		x := recover()
-		switch x := x.(type) {
-		case nil:
-			e = nil
-		case error:
-			e = x
-		default:
-			panic(x)
-		} 
-	}()
-	for steps := enum.steps; steps > 0; steps-- {
-		if cursor := enum.Next(); cond(cursor) {
+func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) (count int) {
+	count = enum.each(func(cursor int) (ok bool) {
+		if ok = cond(cursor); ok {
 			f(cursor)
-			count++
 		}
-	}
+		return
+	})
 	return
 }
 
-func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) (count int, e error) {
-	defer func() {
-		x := recover()
-		switch x := x.(type) {
-		case nil:
-			e = nil
-		case error:
-			e = x
-		default:
-			panic(x)
-		} 
-	}()
-	for steps := enum.steps; steps > 0; steps-- {
-		if cursor := enum.Next(); !cond(cursor) {
+func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) (count int) {
+	count = enum.each(func(cursor int) (ok bool) {
+		if ok = !cond(cursor); ok {
 			f(cursor)
-			count++
 		}
-	}
+		return
+	})
 	return
 }
 

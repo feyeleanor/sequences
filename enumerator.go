@@ -5,7 +5,6 @@ import R "reflect"
 type Enumerator struct {
 	Sequence	interface{}
 	Span		int
-	Limit		int
 	cursor		int
 	steps		int
 	f			interface{}
@@ -34,7 +33,6 @@ func (enum *Enumerator) Next() (cursor int) {
 func (enum *Enumerator) Each(f interface{}) (count int) {
 	enum.Bind(f)
 	enum.cursor = 0
-	enum.steps = enum.Bounds()
 	switch seq := enum.Sequence.(type) {
 	case Enumerable:
 		count = seq.Each(enum)
@@ -263,7 +261,6 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 	enum.Bind(f)
 	enum.seed = seed
 	enum.cursor = 0
-	enum.steps = enum.Bounds()
 	switch seq := enum.Sequence.(type) {
 	case Reducible:
 		r = seq.Reduce(enum)
@@ -514,9 +511,7 @@ func (enum Enumerator) Copy() (r *Enumerator) {
 	r = &Enumerator{
 		Sequence:	enum.Sequence,
 		Span:		enum.Span,
-		Limit:		enum.Limit,
 		cursor:		enum.cursor,
-		steps:		enum.steps,
 		f:			enum.f,
 		error:		enum.error,
 	}
@@ -543,26 +538,6 @@ func (enum *Enumerator) Bind(f interface{}) {
 	default:
 		panic(NOT_AN_ITERATOR)
 	}
-}
-
-func (enum Enumerator) Bounds() (steps int) {
-	switch span := enum.Span; {
-	case span < 0:
-		panic(NEGATIVE_SPAN)
-	case enum.Limit == 0:
-		steps = 0
-	default:
-		if l := Len(enum.Sequence); l > 0 {
-			steps = l / span
-			if l % span != 0 {
-				steps++
-			}
-			if enum.Limit > 0 && steps > enum.Limit {
-				steps = enum.Limit
-			}
-		}
-	}
-	return
 }
 
 func skipToChannelOffset(c R.Value, offset int) int {

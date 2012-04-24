@@ -78,12 +78,12 @@ func Each(seq, f interface{}) (count int) {
 }
 
 func EachBy(seq interface{}, span int, f interface{}) int {
-	enum := &Enumerator{ Sequence: seq, Span: span, Limit: -1 }
+	enum := &Enumerator{ Sequence: seq, Span: span }
 	return enum.Each(f)
 }
 
 func Cycle(seq interface{}, count int, f interface{}) (i int) {
-	enum := &Enumerator{ Sequence: seq, Span: 1, Limit: -1 }
+	enum := &Enumerator{ Sequence: seq, Span: 1 }
 	for ; i < count; i++ {
 		enum.Each(f)
 	}
@@ -164,7 +164,7 @@ func Reduce(seq, seed, f interface{}) interface{} {
 }
 
 func ReduceBy(seq, seed interface{}, span int, f interface{}) interface{} {
-	enum := &Enumerator{ Sequence: seq, Span: span, Limit: -1 }
+	enum := &Enumerator{ Sequence: seq, Span: span }
 	return enum.Reduce(seed, f)
 }
 

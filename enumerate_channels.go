@@ -3,33 +3,35 @@ package sequences
 import R "reflect"
 
 func eachBoolChannel(enum *Enumerator, seq chan bool) (i int) {
-	var next	func() (bool, bool)
+	var forEachReceived	func(func(bool))
+	var x				bool
+	var open			bool
 
 	if enum.Span == 1 {
-		next = func() (v, open bool) {
-			if v, open = <- seq; open {
-				enum.cursor++
+		forEachReceived = func(f func(bool)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
 			}
-			return
-		}		
+			enum.cursor++
+		}
 	} else {
-		next = func() (v, open bool) {
-			offset := enum.Span
-			for open = true; open && offset > 0; offset-- {
-				v, open = <- seq
-				enum.cursor++
+		forEachReceived = func(f func(bool)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
 			}
-			return
+			enum.cursor += enum.Span
 		}
-	}
-
-	forEachReceived := func(f func(v bool)) {
-		steps := enum.steps
-		for v, open := <- seq; open && steps > 0; v, open = next() {
-			f(v)
-			steps--
-		}
-		i = enum.steps - steps
 	}
 
 	switch f := enum.f.(type) {
@@ -86,7 +88,7 @@ func eachBoolChannel(enum *Enumerator, seq chan bool) (i int) {
 			f <- R.ValueOf(v)
 		})
 	case []chan bool:
-		l := len(f) - 1
+/*		l := len(f) - 1
 		forEachReceived(func(v bool) {
 //			go func() {
 				for n := l; n > 0; n-- {
@@ -94,191 +96,114 @@ func eachBoolChannel(enum *Enumerator, seq chan bool) (i int) {
 				}
 //			}()
 		})
-	case []chan interface{}:
-		l := len(f) - 1
+*/	case []chan interface{}:
+/*		l := len(f) - 1
 		forEachReceived(func(v bool) {
 			for n := l; n > 0; n-- {
 				f[n] <- v
 			}
 		})
-	case []chan R.Value:
-		l := len(f) - 1
+*/	case []chan R.Value:
+/*		l := len(f) - 1
 		forEachReceived(func(v bool) {
 			for n := l; n > 0; n-- {
 				f[n] <- R.ValueOf(v)
 			}
 		})
-	default:
+*/	default:
 		panic(UNHANDLED_ITERATOR)
 	}
 	return
 }
 
 func eachComplex64Channel(enum *Enumerator, seq chan complex64) (i int) {
-	var v		complex64
+	var forEachReceived	func(func(complex64))
+	var x				complex64
+	var open			bool
 
-	skipToOffset := func(c chan complex64, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(complex64)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(complex64)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
+
 	switch f := enum.f.(type) {
 	case func(complex64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(v)
+		})
 	case func(int, complex64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, complex64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan complex64:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan complex64:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex64) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan complex64:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -286,170 +211,92 @@ func eachComplex64Channel(enum *Enumerator, seq chan complex64) (i int) {
 }
 
 func eachComplex128Channel(enum *Enumerator, seq chan complex128) (i int) {
-	var v		complex128
+	var forEachReceived	func(func(complex128))
+	var x				complex128
+	var open			bool
 
-	skipToOffset := func(c chan complex128, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(complex128)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(complex128)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(complex128):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(v)
+		})
 	case func(int, complex128):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, complex128):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan complex128:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan complex128:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v complex128) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan complex128:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -457,170 +304,92 @@ func eachComplex128Channel(enum *Enumerator, seq chan complex128) (i int) {
 }
 
 func eachErrorChannel(enum *Enumerator, seq chan error) (i int) {
-	var v		error
+	var forEachReceived	func(func(error))
+	var x				error
+	var open			bool
 
-	skipToOffset := func(c chan error, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(error)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(error)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(error):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(v)
+		})
 	case func(int, error):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, error):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan error:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan error:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v error) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan error:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -628,170 +397,92 @@ func eachErrorChannel(enum *Enumerator, seq chan error) (i int) {
 }
 
 func eachFloat32Channel(enum *Enumerator, seq chan float32) (i int) {
-	var v		float32
+	var forEachReceived	func(func(float32))
+	var x				float32
+	var open			bool
 
-	skipToOffset := func(c chan float32, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(float32)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(float32)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(float32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(v)
+		})
 	case func(int, float32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, float32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan float32:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan float32:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float32) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan float32:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -799,170 +490,92 @@ func eachFloat32Channel(enum *Enumerator, seq chan float32) (i int) {
 }
 
 func eachFloat64Channel(enum *Enumerator, seq chan float64) (i int) {
-	var v		float64
+	var forEachReceived	func(func(float64))
+	var x				float64
+	var open			bool
 
-	skipToOffset := func(c chan float64, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(float64)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(float64)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(float64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(v)
+		})
 	case func(int, float64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, float64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan float64:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan float64:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v float64) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan float64:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -970,170 +583,92 @@ func eachFloat64Channel(enum *Enumerator, seq chan float64) (i int) {
 }
 
 func eachIntChannel(enum *Enumerator, seq chan int) (i int) {
-	var v		int
+	var forEachReceived	func(func(int))
+	var x				int
+	var open			bool
 
-	skipToOffset := func(c chan int, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(int)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(int)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(int):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(v)
+		})
 	case func(int, int):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, int):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan int:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan int:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan int:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1141,170 +676,92 @@ func eachIntChannel(enum *Enumerator, seq chan int) (i int) {
 }
 
 func eachInt8Channel(enum *Enumerator, seq chan int8) (i int) {
-	var v		int8
+	var forEachReceived	func(func(int8))
+	var x				int8
+	var open			bool
 
-	skipToOffset := func(c chan int8, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(int8)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(int8)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(int8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(v)
+		})
 	case func(int, int8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, int8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan int8:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan int8:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int8) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan int8:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1312,170 +769,92 @@ func eachInt8Channel(enum *Enumerator, seq chan int8) (i int) {
 }
 
 func eachInt16Channel(enum *Enumerator, seq chan int16) (i int) {
-	var v		int16
+	var forEachReceived	func(func(int16))
+	var x				int16
+	var open			bool
 
-	skipToOffset := func(c chan int16, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(int16)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(int16)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(int16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(v)
+		})
 	case func(int, int16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, int16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan int16:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan int16:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int16) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan int16:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1483,170 +862,92 @@ func eachInt16Channel(enum *Enumerator, seq chan int16) (i int) {
 }
 
 func eachInt32Channel(enum *Enumerator, seq chan int32) (i int) {
-	var v		int32
+	var forEachReceived	func(func(int32))
+	var x				int32
+	var open			bool
 
-	skipToOffset := func(c chan int32, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(int32)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(int32)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(int32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(v)
+		})
 	case func(int, int32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, int32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan int32:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan int32:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int32) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan int32:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1654,170 +955,92 @@ func eachInt32Channel(enum *Enumerator, seq chan int32) (i int) {
 }
 
 func eachInt64Channel(enum *Enumerator, seq chan int64) (i int) {
-	var v		int64
+	var forEachReceived	func(func(int64))
+	var x				int64
+	var open			bool
 
-	skipToOffset := func(c chan int64, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(int64)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(int64)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(int64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(v)
+		})
 	case func(int, int64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, int64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan int64:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan int64:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v int64) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan int64:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1825,122 +1048,75 @@ func eachInt64Channel(enum *Enumerator, seq chan int64) (i int) {
 }
 
 func eachInterfaceChannel(enum *Enumerator, seq chan interface{}) (i int) {
-	var v		interface{}
+	var forEachReceived	func(func(interface{}))
+	var x				interface{}
+	var open			bool
 
-	skipToOffset := func(c chan interface{}, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(interface{})) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(interface{})) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v interface{}) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -1948,170 +1124,92 @@ func eachInterfaceChannel(enum *Enumerator, seq chan interface{}) (i int) {
 }
 
 func eachStringChannel(enum *Enumerator, seq chan string) (i int) {
-	var v		string
+	var forEachReceived	func(func(string))
+	var x				string
+	var open			bool
 
-	skipToOffset := func(c chan string, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(string)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(string)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(string):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(v)
+		})
 	case func(int, string):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, string):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan string:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan string:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v string) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan string:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2119,170 +1217,92 @@ func eachStringChannel(enum *Enumerator, seq chan string) (i int) {
 }
 
 func eachUintChannel(enum *Enumerator, seq chan uint) (i int) {
-	var v		uint
+	var forEachReceived	func(func(uint))
+	var x				uint
+	var open			bool
 
-	skipToOffset := func(c chan uint, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uint)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uint)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uint):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(v)
+		})
 	case func(int, uint):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uint):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uint:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uint:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uint:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2290,170 +1310,92 @@ func eachUintChannel(enum *Enumerator, seq chan uint) (i int) {
 }
 
 func eachUint8Channel(enum *Enumerator, seq chan uint8) (i int) {
-	var v		uint8
+	var forEachReceived	func(func(uint8))
+	var x				uint8
+	var open			bool
 
-	skipToOffset := func(c chan uint8, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uint8)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uint8)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uint8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(v)
+		})
 	case func(int, uint8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uint8):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uint8:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uint8:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint8) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uint8:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2461,170 +1403,92 @@ func eachUint8Channel(enum *Enumerator, seq chan uint8) (i int) {
 }
 
 func eachUint16Channel(enum *Enumerator, seq chan uint16) (i int) {
-	var v		uint16
+	var forEachReceived	func(func(uint16))
+	var x				uint16
+	var open			bool
 
-	skipToOffset := func(c chan uint16, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uint16)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uint16)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uint16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(v)
+		})
 	case func(int, uint16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uint16):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uint16:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uint16:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint16) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uint16:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2632,170 +1496,92 @@ func eachUint16Channel(enum *Enumerator, seq chan uint16) (i int) {
 }
 
 func eachUint32Channel(enum *Enumerator, seq chan uint32) (i int) {
-	var v		uint32
+	var forEachReceived	func(func(uint32))
+	var x				uint32
+	var open			bool
 
-	skipToOffset := func(c chan uint32, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uint32)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uint32)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uint32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(v)
+		})
 	case func(int, uint32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uint32):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uint32:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uint32:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint32) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uint32:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2803,170 +1589,92 @@ func eachUint32Channel(enum *Enumerator, seq chan uint32) (i int) {
 }
 
 func eachUint64Channel(enum *Enumerator, seq chan uint64) (i int) {
-	var v		uint64
+	var forEachReceived	func(func(uint64))
+	var x				uint64
+	var open			bool
 
-	skipToOffset := func(c chan uint64, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uint64)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uint64)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uint64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(v)
+		})
 	case func(int, uint64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uint64):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uint64:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uint64:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uint64) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uint64:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -2974,170 +1682,92 @@ func eachUint64Channel(enum *Enumerator, seq chan uint64) (i int) {
 }
 
 func eachUintptrChannel(enum *Enumerator, seq chan uintptr) (i int) {
-	var v		uintptr
+	var forEachReceived	func(func(uintptr))
+	var x				uintptr
+	var open			bool
 
-	skipToOffset := func(c chan uintptr, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(uintptr)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(uintptr)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(uintptr):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(v)
+		})
 	case func(int, uintptr):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, uintptr):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(v)
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(R.ValueOf(v))
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(enum.cursor, R.ValueOf(v))
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), R.ValueOf(v))
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f(R.ValueOf(enum.cursor), R.ValueOf(v))
+		})
 	case chan uintptr:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f <- v
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f <- v
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- R.ValueOf(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan uintptr:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- R.ValueOf(v)
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v uintptr) {
+			f <- R.ValueOf(v)
+		})
+//	case []chan uintptr:
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -3145,122 +1775,75 @@ func eachUintptrChannel(enum *Enumerator, seq chan uintptr) (i int) {
 }
 
 func eachRValueChannel(enum *Enumerator, seq chan R.Value) (i int) {
-	var v		R.Value
+	var forEachReceived	func(func(R.Value))
+	var x				R.Value
+	var open			bool
 
-	skipToOffset := func(c chan R.Value, offset int) (open bool) {
-		for open = true; open && offset > 1; offset-- {
-			_, open = <- seq
+	if enum.Span == 1 {
+		forEachReceived = func(f func(R.Value)) {
+			for {
+				if x, open = <- seq; !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
 			enum.cursor++
 		}
-		return
+	} else {
+		forEachReceived = func(f func(R.Value)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = <- seq; !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
 	}
-	steps := enum.steps
 	switch f := enum.f.(type) {
 	case func(interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v.Interface())
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(v.Interface())
+		})
 	case func(int, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v.Interface())
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(enum.cursor, v.Interface())
+		})
 	case func(interface{}, interface{}):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v.Interface())
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(enum.cursor, v.Interface())
+		})
 	case func(R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(v)
+		})
 	case func(int, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(enum.cursor, v)
+		})
 	case func(interface{}, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(enum.cursor, v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(enum.cursor, v)
+		})
 	case func(R.Value, R.Value):
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f(R.ValueOf(enum.cursor), v)
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f(R.ValueOf(enum.cursor), v)
+		})
 	case chan interface{}:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v.Interface()
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f <- v.Interface()
+		})
 	case chan R.Value:
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				f <- v
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan interface{}:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v.Interface()
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
-	case []chan R.Value:
-		l := len(f) - 1
-		for open := true; open && steps > 0; steps-- {
-			if v, open = <- seq; open {
-				for n := l; n > 0; n-- {
-					f[n] <- v
-				}
-				enum.cursor++
-				i++
-				open = skipToOffset(seq, enum.Span)
-			}
-		}
+		forEachReceived(func(v R.Value) {
+			f <- v
+		})
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		panic(UNHANDLED_ITERATOR)
 	}
@@ -3268,102 +1851,102 @@ func eachRValueChannel(enum *Enumerator, seq chan R.Value) (i int) {
 }
 
 func eachChannel(enum *Enumerator, c R.Value) (i int) {
-	steps := enum.steps
-println("limit:", _MAXINT_)
-println("enum.cursor:", enum.cursor)
-println("enum.steps:", enum.steps)
+	var forEachReceived	func(func(R.Value))
+	var x				R.Value
+	var open			bool
+
+	if enum.Span == 1 {
+		forEachReceived = func(f func(R.Value)) {
+			for {
+				if x, open = c.Recv(); !open {
+					PanicWithIndex(enum.cursor)
+				}
+				f(x)
+				i++
+			}
+			enum.cursor++
+		}
+	} else {
+		forEachReceived = func(f func(R.Value)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, open = c.Recv(); !open {
+						PanicWithIndex(enum.cursor + enum.Span)
+					}
+				}
+				f(x)
+				i++
+			}
+			enum.cursor += enum.Span
+		}
+	}
+
+
+
+
+
 	switch f := enum.f.(type) {
 	case func(interface{}):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(v.Interface())
-			skipToChannelOffset(c, enum.Span)
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(int, interface{}):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(enum.cursor, v.Interface())
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(interface{}, interface{}):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(enum.cursor, v.Interface())
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			i++
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(R.Value):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(v)
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			i++
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(int, R.Value):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(enum.cursor, v)
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			i++
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(interface{}, R.Value):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(enum.cursor, v)
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			i++
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
+		})
 	case func(R.Value, R.Value):
-		for v, open := c.Recv(); open && steps > 0; steps-- {
+		forEachReceived(func(v R.Value) {
 			f(R.ValueOf(enum.cursor), v)
-			skipToChannelOffset(c, enum.Span)
-			enum.cursor += enum.Span
-			i++
-			v, open = c.Recv()
-		}
-		i = enum.steps - steps
-	case []chan interface{}:
-		panic("[]chan interface{} iterator not yet implemented")
-	case []chan R.Value:
-		panic("[]chan R.Value iterator not yet implemented")
+		})
+	case chan interface{}:
+		forEachReceived(func(v R.Value) {
+			f <- v.Interface()
+		})
+	case chan R.Value:
+		forEachReceived(func(v R.Value) {
+			f <- v
+		})
+//	case []chan interface{}:
+//	case []chan R.Value:
 	default:
 		if f := R.ValueOf(f); f.Kind() == R.Func {
 			if t := f.Type(); !t.IsVariadic() {
 				switch t.NumIn() {
 				case 1:				//	f(v)
 					p := make([]R.Value, 1, 1)
-					for v, open := c.Recv(); open && steps > 0; steps-- {
+					forEachReceived(func(v R.Value) {
 						p[0] = v
 						f.Call(p)
-						skipToChannelOffset(c, enum.Span)
-						v, open = c.Recv()
-					}
-					i = enum.steps - steps
+					})
 				case 2:				//	f(i, v)
 					p := make([]R.Value, 2, 2)
-					for v, open := c.Recv(); open && steps > 0; steps-- {
+					forEachReceived(func(v R.Value) {
 						p[0], p[1] = R.ValueOf(enum.cursor), v
 						f.Call(p)
-						skipToChannelOffset(c, enum.Span)
-						enum.cursor += enum.Span
-						v, open = c.Recv()
-					}
-					i = enum.steps - steps
+					})
 				default:
 					panic(UNHANDLED_ITERATOR)
 				}
 			}
+		} else {
+			panic(UNHANDLED_ITERATOR)
 		}
 	}
 	return
