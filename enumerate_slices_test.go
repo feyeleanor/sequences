@@ -696,6 +696,46 @@ func TestEnumerateSlice(t *testing.T) {
 				count++
 			})
 		case R.Value:
+		case []UDT:
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v UDT) {
+				offset := sliceOffset(s, count, span)
+				if v != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v UDT) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case v != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(v UDT) {
+				offset := sliceOffset(s, count, span)
+				if uintptr(v) != AtOffset(s, offset) {
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, offset, v)
+				}
+				count++
+			})
+
+			count = 0
+			ConfirmSliceEachBy(t, s, span, func(i int, v int) {
+				switch offset := sliceOffset(s, count, span); {
+				case i != offset:
+					t.Fatalf("%T (%v): index %v erroneously reported as %v", s, span, offset, i)
+				case uintptr(v) != AtOffset(s, i):
+					t.Fatalf("%T (%v): element %v erroneously reported as %v", s, span, i, v)
+				}
+				count++
+			})
 		default:
 			t.Fatalf("unknown sequence type %T", s)
 		}
@@ -726,6 +766,7 @@ func TestEnumerateSlice(t *testing.T) {
 		[]uintptr{0, 1, 2, 3, 4},
 		[]R.Value{R.ValueOf(0), R.ValueOf(1), R.ValueOf(2), R.ValueOf(3), R.ValueOf(4)},
 		R.ValueOf([]int{0, 1, 2, 3, 4}),
+		[]UDT{0, 1, 2, 3, 4},
 	}
 
 	//	Enumerate each item of the sequence
