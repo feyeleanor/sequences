@@ -99,12 +99,6 @@ func CycleForever(container interface{}, f interface{}) {
 //	f() should be an interface{} with a call to a generic function call handler
 func Count(container interface{}, f func(interface{}) bool) (n, l int) {
 	return CountBy(container, 1, f)
-//	l = Each(container, func(x interface{}) {
-//		if f(x) {
-//			n++
-//		}
-//	})
-	return
 }
 
 func CountBy(container interface{}, span int, f func(interface{}) bool) (n, l int) {
@@ -167,36 +161,3 @@ func ReduceBy(seq, seed interface{}, span int, f interface{}) interface{} {
 	enum := &Enumerator{ Sequence: seq, Span: span }
 	return enum.Reduce(seed, f)
 }
-
-/*
-type Reducible interface {
-	Reduce(seed, function interface{}) (r interface{}, e error)
-}
-
-func Reduce(container, seed interface{}, f interface{}) (r interface{}, e error) {
-	switch c := container.(type) {
-	case Reducible:
-		r, e = c.Reduce(seed, f)
-	case Indexable:
-		r, e = reduceIndexable(c, seed, f)
-	case Mappable:
-		r, e = reduceMappable(c, seed, f)
-	case Enumerable:
-		r, e = reduceEnumerable(c, seed, f)
-	default:
-		switch c := R.ValueOf(container); c.Kind() {
-		case R.Invalid:
-			r = seed
-		case R.Slice:
-			r, e = reduceSlice(c, seed, f)
-		case R.Map:
-			r, e = reduceMap(c, seed, f)
-		case R.Chan:
-			r, e = reduceChan(c, seed, f)
-		case R.Func:
-			r, e = reduceFunction(c, seed, f)
-		}
-	}
-	return
-}
-*/

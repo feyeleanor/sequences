@@ -346,7 +346,7 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		r = reduceUintptrFunction(enum, seq)
 	case func(int) R.Value:
 		r = reduceRValueFunction(enum, seq)
-/*	case chan bool:
+	case chan bool:
 		if enum.Span < 1 {
 			panic(ASCENDING_SEQUENCE)
 		} else {
@@ -466,7 +466,7 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 		} else {
 			r = reduceRValueChannel(enum, seq)
 		}
-*/	case R.Value:
+	case R.Value:
 		switch seq.Kind() {
 		case R.Slice:
 			r = reduceSlice(enum, seq)

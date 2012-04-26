@@ -12,7 +12,11 @@ panic(e)
 	}
 }
 
-func TestReduceIndexable(t *testing.T) {
+func TestReduceIndexableSlice(t *testing.T) {
+	s := func(v ...interface{}) indexable_slice {
+		return indexable_slice(v)
+	}
+
 	iterators := []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(int) + v.(int) },
 		func(seed interface{}, index int, v interface{}) interface{} { return seed.(int) + v.(int) },
@@ -35,20 +39,18 @@ func TestReduceIndexable(t *testing.T) {
 		}
 	}
 
-	ConfirmReduce(indexable_slice{}, 0, 0)
-	ConfirmReduce(indexable_slice{}, 10, 10)
-	ConfirmReduce(indexable_slice{0}, 0, 0)
-	ConfirmReduce(indexable_slice{0}, 10, 10)
-	ConfirmReduce(indexable_slice{1}, 0, 1)
-	ConfirmReduce(indexable_slice{1}, 10, 11)
-	ConfirmReduce(indexable_slice{1, 2}, 0, 3)
-	ConfirmReduce(indexable_slice{1, 2}, 10, 13)
-	ConfirmReduce(indexable_slice{1, 2, 3}, 0, 6)
-	ConfirmReduce(indexable_slice{1, 2, 3}, 10, 16)
-	ConfirmReduce(indexable_slice{1, 2, 3, 4}, 0, 10)
-	ConfirmReduce(indexable_slice{1, 2, 3, 4}, 10, 20)
-	ConfirmReduce(indexable_function(func(i int) interface{} { return i }), 0, 55)
-	ConfirmReduce(indexable_function(func(i int) interface{} { return i }), 10, 65)
+	ConfirmReduce(s(), 0, 0)
+	ConfirmReduce(s(), 10, 10)
+	ConfirmReduce(s(0), 0, 0)
+	ConfirmReduce(s(0), 10, 10)
+	ConfirmReduce(s(1), 0, 1)
+	ConfirmReduce(s(1), 10, 11)
+	ConfirmReduce(s(1, 2), 0, 3)
+	ConfirmReduce(s(1, 2), 10, 13)
+	ConfirmReduce(s(1, 2, 3), 0, 6)
+	ConfirmReduce(s(1, 2, 3), 10, 16)
+	ConfirmReduce(s(1, 2, 3, 4), 0, 10)
+	ConfirmReduce(s(1, 2, 3, 4), 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -63,17 +65,17 @@ func TestReduceIndexable(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 	
-	ConfirmReduce(indexable_slice{}, false, false)
-	ConfirmReduce(indexable_slice{}, true, true)
-	ConfirmReduce(indexable_slice{false}, false, false)
-	ConfirmReduce(indexable_slice{false}, true, false)
-	ConfirmReduce(indexable_slice{true}, false, false)
-	ConfirmReduce(indexable_slice{true}, true, true)
-	ConfirmReduce(indexable_slice{false, true}, true, false)
-	ConfirmReduce(indexable_slice{true, false}, true, false)
-	ConfirmReduce(indexable_slice{true, true}, true, true)
-	ConfirmReduce(indexable_slice{true, true, true}, true, true)
-	ConfirmReduce(indexable_slice{true, true, false, true}, true, false)
+	ConfirmReduce(s(), false, false)
+	ConfirmReduce(s(), true, true)
+	ConfirmReduce(s(false), false, false)
+	ConfirmReduce(s(false), true, false)
+	ConfirmReduce(s(true), false, false)
+	ConfirmReduce(s(true), true, true)
+	ConfirmReduce(s(false, true), true, false)
+	ConfirmReduce(s(true, false), true, false)
+	ConfirmReduce(s(true, true), true, true)
+	ConfirmReduce(s(true, true, true), true, true)
+	ConfirmReduce(s(true, true, false, true), true, false)
 }
 
 func TestReduceBoolSlice(t *testing.T) {

@@ -1881,11 +1881,6 @@ func eachChannel(enum *Enumerator, c R.Value) (i int) {
 			enum.cursor += enum.Span
 		}
 	}
-
-
-
-
-
 	switch f := enum.f.(type) {
 	case func(interface{}):
 		forEachReceived(func(v R.Value) {
