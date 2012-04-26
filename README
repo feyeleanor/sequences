@@ -30,3 +30,9 @@ codebase will be inspired to explore this oft overlooked topic.
 Sequences should install successfully with goinstall:
 
 	goinstall -v github.com/feyeleanor/sequences
+
+
+== FAQ ==
+
+Q. Is sequences suitable for production code?
+A. Probably not.

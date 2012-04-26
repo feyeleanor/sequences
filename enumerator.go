@@ -472,26 +472,24 @@ func (enum *Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 			r = reduceSlice(enum, seq)
 		case R.Func:
 			r = reduceFunction(enum, seq)
-/*		case R.Chan:
+		case R.Chan:
 			if enum.Span < 1 {
 				panic(ASCENDING_SEQUENCE)
 			} else {
 				r = reduceChannel(enum, seq)
 			}
-*/		
-		default:
-			switch c := R.ValueOf(seq); c.Kind() {
-			case R.Slice:
-				r = reduceSlice(enum, c)
-			case R.Func:
-				r = reduceFunction(enum, seq)
-/*			case R.Chan:
-				if enum.Span < 1 {
-					panic(ASCENDING_SEQUENCE)
-				} else {
-					r = reduceChannel(enum, c)
-				}
-*/
+		}
+	default:
+		switch c := R.ValueOf(seq); c.Kind() {
+		case R.Slice:
+			r = reduceSlice(enum, c)
+		case R.Func:
+			r = reduceFunction(enum, c)
+		case R.Chan:
+			if enum.Span < 1 {
+				panic(ASCENDING_SEQUENCE)
+			} else {
+				r = reduceChannel(enum, c)
 			}
 		}
 	}

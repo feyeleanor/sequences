@@ -1,6 +1,8 @@
 package sequences
 
-import R "reflect"
+import (
+	R "reflect"
+)
 
 func reduceBoolChannel(enum *Enumerator, seq chan bool) (r bool) {
 	var forEachReceived	func(func(bool))
@@ -2088,119 +2090,98 @@ func reduceRValueChannel(enum *Enumerator, seq chan R.Value) (r R.Value) {
 	}
 	return
 }
-/*
+
 func reduceChannel(enum *Enumerator, s R.Value) (r R.Value) {
+	var forEachReceived	func(func(R.Value))
+	var x				R.Value
+	var ok				bool
+
+	if enum.Span == 1 {
+		forEachReceived = func(f func(R.Value)) {
+			for {
+				if x, ok = s.Recv(); !ok {
+					return
+				}
+				f(x)
+			}
+			enum.cursor++
+		}
+	} else {
+		forEachReceived = func(f func(R.Value)) {
+			var offset	int
+			for {
+				for offset = enum.Span; offset > 0; offset-- {
+					if x, ok = s.Recv(); !ok {
+						return
+					}
+				}
+				f(x)
+			}
+			enum.cursor += enum.Span
+		}
+	}
+
 	switch f := enum.f.(type) {
 	case func(interface{}, interface{}) interface{}:
-		var ok		bool
-		var v		R.Value
 		var ri		interface{}
 		if r, ok = enum.seed.(R.Value); ok {
 			ri = r.Interface()
 		} else {
 			ri = enum.seed
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				ri = f(ri, v.Interface())
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			ri = f(ri, v.Interface())
 		})
 		r = R.ValueOf(ri)
 	case func(interface{}, int, interface{}) interface{}:
-		var ok		bool
-		var v		R.Value
 		var ri		interface{}
 		if r, ok = enum.seed.(R.Value); ok {
 			ri = r.Interface()
 		} else {
 			ri = enum.seed
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				ri = f(ri, cursor, v.Interface())
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			ri = f(ri, enum.cursor, v.Interface())
 		})
 		r = R.ValueOf(ri)
 	case func(interface{}, interface{}, interface{}) interface{}:
-		var ok		bool
-		var v		R.Value
 		var ri		interface{}
 		if r, ok = enum.seed.(R.Value); ok {
 			ri = r.Interface()
 		} else {
 			ri = enum.seed
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				ri = f(ri, cursor, v.Interface())
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			ri = f(ri, enum.cursor, v.Interface())
 		})
 		r = R.ValueOf(ri)
 	case func(R.Value, R.Value) R.Value:
-		var ok		bool
-		var v		R.Value
-		if v, ok = enum.seed.(R.Value); ok {
-			r = v
-		} else {
+		if r, ok = enum.seed.(R.Value); !ok {
 			r = R.ValueOf(enum.seed)
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				r = f(r, v)
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			r = f(r, v)
 		})
 	case func(R.Value, int, R.Value) R.Value:
-		var ok		bool
-		var v		R.Value
-		if v, ok = enum.seed.(R.Value); ok {
-			r = v
-		} else {
+		if r, ok = enum.seed.(R.Value); !ok {
 			r = R.ValueOf(enum.seed)
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				r = f(r, cursor, v)
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			r = f(r, enum.cursor, v)
 		})
 	case func(R.Value, interface{}, R.Value) R.Value:
-		var ok		bool
-		var v		R.Value
-		if v, ok = enum.seed.(R.Value); ok {
-			r = v
-		} else {
+		if r, ok = enum.seed.(R.Value); !ok {
 			r = R.ValueOf(enum.seed)
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				r = f(r, cursor, v)
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			r = f(r, enum.cursor, v)
 		})
 	case func(R.Value, R.Value, R.Value) R.Value:
-		var ok		bool
-		var v		R.Value
-		if v, ok = enum.seed.(R.Value); ok {
-			r = v
-		} else {
+		if r, ok = enum.seed.(R.Value); !ok {
 			r = R.ValueOf(enum.seed)
 		}
-		enum.reduce(func(cursor int) {
-			if v, ok = s.Recv(); ok {
-				r = f(r, R.ValueOf(cursor), v)
-			} else {
-				PanicWithIndex(cursor)
-			}
+		forEachReceived(func(v R.Value) {
+			r = f(r, R.ValueOf(enum.cursor), v)
 		})
 	default:
 		switch f := R.ValueOf(f); f.Kind() {
@@ -2208,39 +2189,23 @@ func reduceChannel(enum *Enumerator, s R.Value) (r R.Value) {
 			if t := f.Type(); !t.IsVariadic() {
 				switch t.NumIn() {
 				case 2:
-					var ok		bool
-					var v		R.Value
 					p := make([]R.Value, 2, 2)
-					if r, ok = enum.seed.(R.Value); ok {
-						p[0] = r
-					} else {
+					if p[0], ok = enum.seed.(R.Value); !ok {
 						p[0] = R.ValueOf(enum.seed)
 					}
-					enum.reduce(func(cursor int) {
-						if v, ok = s.Recv(); ok {
-							p[1] = v
-							p[0] = f.Call(p)[0]
-						} else {
-							PanicWithIndex(cursor)
-						}
+					forEachReceived(func(v R.Value) {
+						p[1] = v
+						p[0] = f.Call(p)[0]
 					})
 					r = p[0]
 				case 3:
-					var ok		bool
-					var v		R.Value
 					p := make([]R.Value, 3, 3)
-					if r, ok = enum.seed.(R.Value); ok {
-						p[0] = r
-					} else {
+					if p[0], ok = enum.seed.(R.Value); !ok {
 						p[0] = R.ValueOf(enum.seed)
 					}
-					enum.reduce(func(cursor int) {
-						if v, ok = s.Recv(); ok {
-							p[1], p[2] = R.ValueOf(cursor), v
-							p[0] = f.Call(p)[0]
-						} else {
-							PanicWithIndex(cursor)
-						}
+					forEachReceived(func(v R.Value) {
+						p[1], p[2] = R.ValueOf(enum.cursor), v
+						p[0] = f.Call(p)[0]
 					})
 					r = p[0]
 				default:
@@ -2253,4 +2218,3 @@ func reduceChannel(enum *Enumerator, s R.Value) (r R.Value) {
 	}
 	return
 }
-*/

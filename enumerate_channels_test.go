@@ -5,6 +5,18 @@ import(
 	"testing"
 )
 
+func spannedLength(length, span int) (r int) {
+	if span < 0 {
+		r = length / -span
+	} else {
+		r = length / span
+	}
+	if length % span != 0 {
+		r++
+	}
+	return
+}
+
 func TestEnumerateChannelBool(t *testing.T) {
 	var count		int
 	var sequence	func() chan bool
@@ -23,18 +35,8 @@ func TestEnumerateChannelBool(t *testing.T) {
 	}
 
 	spannedLen := func(span int) (r int) {
-		l := len(s)
-		if span < 0 {
-			r = l / -span
-		} else {
-			r = l / span
-		}
-		if l % span != 0 {
-			r++
-		}
-		return
+		return spannedLength(len(s), span)
 	}
-	
 
 	ConfirmEachBy := func(s interface{}, span int, f interface{}) {
 		defer func() {
