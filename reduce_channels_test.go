@@ -32,26 +32,37 @@ func TestReduceBoolChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 
-	ConfirmReduce := func(c func() chan bool, seed, result interface{}) {
-		defer reportReductionError(t, c, seed)
+	funcs := [] func() chan bool {
+		f(),
+		f(false),
+		f(true),
+		f(false, true),
+		f(true, false),
+		f(true, true),
+		f(true, true, true),
+		f(true, false, true, false),
+	}
+
+	ConfirmReduce := func(i int, seed, result interface{}) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(c(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", c, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), false, false)
-	ConfirmReduce(f(), true, true)
-	ConfirmReduce(f(false), false, false)
-	ConfirmReduce(f(false), true, false)
-	ConfirmReduce(f(true), false, false)
-	ConfirmReduce(f(true), true, true)
-	ConfirmReduce(f(false, true), true, false)
-	ConfirmReduce(f(true, false), true, false)
-	ConfirmReduce(f(true, true), true, true)
-	ConfirmReduce(f(true, true, true), true, true)
-	ConfirmReduce(f(true, true, false, true), true, false)
+	ConfirmReduce(0, false, false)
+	ConfirmReduce(0, true, true)
+	ConfirmReduce(1, false, false)
+	ConfirmReduce(1, true, false)
+	ConfirmReduce(2, false, false)
+	ConfirmReduce(2, true, true)
+	ConfirmReduce(3, true, false)
+	ConfirmReduce(4, true, false)
+	ConfirmReduce(5, true, true)
+	ConfirmReduce(6, true, true)
+	ConfirmReduce(7, true, false)
 }
 
 func TestReduceComplex64Channel(t *testing.T) {
@@ -81,26 +92,35 @@ func TestReduceComplex64Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Complex() + v.Complex()) },
 	}
 
-	ConfirmReduce := func(o func() chan complex64, seed, result complex64) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan complex64{
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result complex64) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 1, 1)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 1, 1)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 1, 2)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 1, 1)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 1, 1)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 1, 2)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 
@@ -131,26 +151,34 @@ func TestReduceComplex128Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Complex() + v.Complex()) },
 	}
 
-	ConfirmReduce := func(o func() chan complex128, seed, result complex128) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan complex128 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3), f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result complex128) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 1, 1)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 1, 1)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 1, 2)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 1, 1)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 1, 1)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 1, 2)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceErrorChannel(t *testing.T) {
@@ -180,27 +208,36 @@ func TestReduceErrorChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Interface().(Error) | v.Interface().(Error)) },
 	}
 
-	ConfirmReduce := func(o func() chan error, seed, result error) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan error {
+		f(),
+		f(Error(0)),
+		f(Error(1)),
+		f(Error(0), Error(1)),
+		f(Error(0), Error(1), Error(2)),
+		f(Error(0), Error(1), Error(2), Error(4)),
+	}
+
+	ConfirmReduce := func(i int, seed, result error) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), Error(0), Error(0))
-	ConfirmReduce(f(), Error(8), Error(8))
-	ConfirmReduce(f(Error(0)), Error(0), Error(0))
-	ConfirmReduce(f(Error(0)), Error(8), Error(8))
-	ConfirmReduce(f(Error(1)), Error(0), Error(1))
-	ConfirmReduce(f(Error(1)), Error(8), Error(9))
-	ConfirmReduce(f(Error(0), Error(1)), Error(0), Error(1))
-	ConfirmReduce(f(Error(0), Error(1)), Error(8), Error(9))
-	ConfirmReduce(f(Error(0), Error(1), Error(2)), Error(0), Error(3))
-	ConfirmReduce(f(Error(0), Error(1), Error(2)), Error(8), Error(11))
-	ConfirmReduce(f(Error(0), Error(1), Error(2), Error(4)), Error(0), Error(7))
-	ConfirmReduce(f(Error(0), Error(1), Error(2), Error(4)), Error(8), Error(15))
+	ConfirmReduce(0, Error(0), Error(0))
+	ConfirmReduce(0, Error(8), Error(8))
+	ConfirmReduce(1, Error(0), Error(0))
+	ConfirmReduce(1, Error(8), Error(8))
+	ConfirmReduce(2, Error(0), Error(1))
+	ConfirmReduce(2, Error(8), Error(9))
+	ConfirmReduce(3, Error(0), Error(1))
+	ConfirmReduce(3, Error(8), Error(9))
+	ConfirmReduce(4, Error(0), Error(3))
+	ConfirmReduce(4, Error(8), Error(11))
+	ConfirmReduce(5, Error(0), Error(7))
+	ConfirmReduce(5, Error(8), Error(15))
 }
 
 func TestReduceFloat32Channel(t *testing.T) {
@@ -230,26 +267,35 @@ func TestReduceFloat32Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Float() + v.Float()) },
 	}
 
-	ConfirmReduce := func(o func() chan float32, seed, result float32) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan float32 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result float32) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 1, 1)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 1, 1)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 1, 2)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 1, 1)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 1, 1)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 1, 2)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceFloat64Channel(t *testing.T) {
@@ -279,26 +325,35 @@ func TestReduceFloat64Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Float() + v.Float()) },
 	}
 
-	ConfirmReduce := func(o func() chan float64, seed, result float64) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan float64 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result float64) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 1, 1)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 1, 1)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 1, 2)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 1, 1)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 1, 1)
+	ConfirmReduce(1, 0, 1)
+	ConfirmReduce(1, 1, 2)
+	ConfirmReduce(2, 0, 3)
+	ConfirmReduce(2, 10, 13)
+	ConfirmReduce(3, 0, 6)
+	ConfirmReduce(4, 0, 10)
+	ConfirmReduce(4, 10, 20)
 }
 
 func TestReduceIntChannel(t *testing.T) {
@@ -328,27 +383,36 @@ func TestReduceIntChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Int() + v.Int()) },
 	}
 
-	ConfirmReduce := func(o func() chan int, seed, result interface{}) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan int {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result interface{}) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceInt8Channel(t *testing.T) {
@@ -381,27 +445,36 @@ func TestReduceInt8Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Int() + v.Int()) },
 	}
 
-	ConfirmReduce := func(o func() chan int8, seed, result int8) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan int8 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result int8) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceInt16Channel(t *testing.T) {
@@ -434,27 +507,36 @@ func TestReduceInt16Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Int() + v.Int()) },
 	}
 
-	ConfirmReduce := func(o func() chan int16, seed, result int16) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan int16 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result int16) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceInt32Channel(t *testing.T) {
@@ -487,27 +569,36 @@ func TestReduceInt32Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Int() + v.Int()) },
 	}
 
-	ConfirmReduce := func(o func() chan int32, seed, result int32) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan int32 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result int32) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceInt64Channel(t *testing.T) {
@@ -540,27 +631,36 @@ func TestReduceInt64Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Int() + v.Int()) },
 	}
 
-	ConfirmReduce := func(o func() chan int64, seed, result int64) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan int64 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result int64) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceInterfaceChannel(t *testing.T) {
@@ -590,27 +690,36 @@ func TestReduceInterfaceChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
 	}
 
-	ConfirmReduce := func(o func() chan interface{}, seed, result interface{}) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan interface{} {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result interface{}) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+   	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -624,18 +733,29 @@ func TestReduceInterfaceChannel(t *testing.T) {
 		func(seed R.Value, index interface{}, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
-	
-	ConfirmReduce(f(), false, false)
-	ConfirmReduce(f(), true, true)
-	ConfirmReduce(f(false), false, false)
-	ConfirmReduce(f(false), true, false)
-	ConfirmReduce(f(true), false, false)
-	ConfirmReduce(f(true), true, true)
-	ConfirmReduce(f(false, true), true, false)
-	ConfirmReduce(f(true, false), true, false)
-	ConfirmReduce(f(true, true), true, true)
-	ConfirmReduce(f(true, true, true), true, true)
-	ConfirmReduce(f(true, true, false, true), true, false)
+
+	funcs = []func() chan interface{} {
+		f(),
+		f(false),
+		f(true),
+		f(false, true),
+		f(true, false),
+		f(true, true),
+		f(true, true, true),
+		f(true, true, false, true),
+	}
+
+	ConfirmReduce(0, false, false)
+	ConfirmReduce(0, true, true)
+	ConfirmReduce(1, false, false)
+	ConfirmReduce(1, true, false)
+	ConfirmReduce(2, false, false)
+	ConfirmReduce(2, true, true)
+	ConfirmReduce(3, true, false)
+	ConfirmReduce(4, true, false)
+	ConfirmReduce(5, true, true)
+	ConfirmReduce(6, true, true)
+	ConfirmReduce(7, true, false)
 }
 
 func TestReduceStringChannel(t *testing.T) {
@@ -665,27 +785,36 @@ func TestReduceStringChannel(t *testing.T) {
 		func(seed, index, v R.Value) R.Value { return R.ValueOf(seed.String() + v.String()) },
 	}
 
-	ConfirmReduce := func(o func() chan string, seed, result string) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan string {
+		f(),
+		f(""),
+		f("A"),
+		f("A", "B"),
+		f("A", "B", "C"),
+		f("A", "B", "C", "D"),
+	}
+
+	ConfirmReduce := func(i int, seed, result string) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), "", "")
-	ConfirmReduce(f(), "Z", "Z")
-	ConfirmReduce(f(""), "", "")
-	ConfirmReduce(f(""), "Z", "Z")
-	ConfirmReduce(f("A"), "", "A")
-	ConfirmReduce(f("A"), "Z", "ZA")
-	ConfirmReduce(f("A", "B"), "", "AB")
-	ConfirmReduce(f("A", "B"), "Z", "ZAB")
-	ConfirmReduce(f("A", "B", "C"), "", "ABC")
-	ConfirmReduce(f("A", "B", "C"), "Z", "ZABC")
-	ConfirmReduce(f("A", "B", "C", "D"), "", "ABCD")
-	ConfirmReduce(f("A", "B", "C", "D"), "Z", "ZABCD")
+	ConfirmReduce(0, "", "")
+	ConfirmReduce(0, "Z", "Z")
+	ConfirmReduce(1, "", "")
+	ConfirmReduce(1, "Z", "Z")
+	ConfirmReduce(2, "", "A")
+	ConfirmReduce(2, "Z", "ZA")
+	ConfirmReduce(3, "", "AB")
+	ConfirmReduce(3, "Z", "ZAB")
+	ConfirmReduce(4, "", "ABC")
+	ConfirmReduce(4, "Z", "ZABC")
+	ConfirmReduce(5, "", "ABCD")
+	ConfirmReduce(5, "Z", "ZABCD")
 }
 
 func TestReduceUintChannel(t *testing.T) {
@@ -715,27 +844,36 @@ func TestReduceUintChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uint, seed, result uint) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uint {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result uint) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceUint8Channel(t *testing.T) {
@@ -768,27 +906,37 @@ func TestReduceUint8Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uint8, seed, result uint8) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uint8 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+
+	ConfirmReduce := func(i int, seed, result uint8) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceUint16Channel(t *testing.T) {
@@ -821,27 +969,36 @@ func TestReduceUint16Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uint16, seed, result uint16) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uint16 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result uint16) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceUint32Channel(t *testing.T) {
@@ -874,27 +1031,36 @@ func TestReduceUint32Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uint32, seed, result uint32) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uint32 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result uint32) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceUint64Channel(t *testing.T) {
@@ -927,27 +1093,36 @@ func TestReduceUint64Channel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uint64, seed, result uint64) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uint64 {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result uint64) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceUintptrChannel(t *testing.T) {
@@ -980,27 +1155,36 @@ func TestReduceUintptrChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Uint() + v.Uint()) },
 	}
 
-	ConfirmReduce := func(o func() chan uintptr, seed, result uintptr) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan uintptr {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduce := func(i int, seed, result uintptr) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v)
+			if v := Reduce(funcs[i], seed, f); v != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v)
 			}
 		}
 	}
 
-	ConfirmReduce(f(), 0, 0)
-	ConfirmReduce(f(), 10, 10)
-	ConfirmReduce(f(0), 0, 0)
-	ConfirmReduce(f(0), 10, 10)
-	ConfirmReduce(f(1), 0, 1)
-	ConfirmReduce(f(1), 10, 11)
-	ConfirmReduce(f(1, 2), 0, 3)
-	ConfirmReduce(f(1, 2), 10, 13)
-	ConfirmReduce(f(1, 2, 3), 0, 6)
-	ConfirmReduce(f(1, 2, 3), 10, 16)
-	ConfirmReduce(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduce(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduce(0, 0, 0)
+	ConfirmReduce(0, 10, 10)
+	ConfirmReduce(1, 0, 0)
+	ConfirmReduce(1, 10, 10)
+	ConfirmReduce(2, 0, 1)
+	ConfirmReduce(2, 10, 11)
+	ConfirmReduce(3, 0, 3)
+	ConfirmReduce(3, 10, 13)
+	ConfirmReduce(4, 0, 6)
+	ConfirmReduce(4, 10, 16)
+	ConfirmReduce(5, 0, 10)
+	ConfirmReduce(5, 10, 20)
 }
 
 func TestReduceRValueChannel(t *testing.T) {
@@ -1030,49 +1214,58 @@ func TestReduceRValueChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(int(seed.Int() + v.Int())) },
 	}
 
-	ConfirmReduceInterfaceSeed := func(o func() chan R.Value, seed, result interface{}) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan R.Value {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduceInterfaceSeed := func(i int, seed, result interface{}) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v.(R.Value).Interface() != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v.(R.Value).Interface())
+			if v := Reduce(funcs[i], seed, f); v.(R.Value).Interface() != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v.(R.Value).Interface())
 			}
 		}
 	}
 
-	ConfirmReduceValueSeed := func(o func() chan R.Value, seed, result interface{}) {
-		defer reportReductionError(t, o, seed)
+	ConfirmReduceValueSeed := func(i int, seed, result interface{}) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), R.ValueOf(seed), f); v.(R.Value).Interface() != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v.(R.Value).Interface())
+			if v := Reduce(funcs[i], R.ValueOf(seed), f); v.(R.Value).Interface() != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v.(R.Value).Interface())
 			}
 		}
 	}
 
-	ConfirmReduceInterfaceSeed(f(), 0, 0)
-	ConfirmReduceInterfaceSeed(f(), 10, 10)
-	ConfirmReduceInterfaceSeed(f(0), 0, 0)
-	ConfirmReduceInterfaceSeed(f(0), 10, 10)
-	ConfirmReduceInterfaceSeed(f(1), 0, 1)
-	ConfirmReduceInterfaceSeed(f(1), 10, 11)
-	ConfirmReduceInterfaceSeed(f(1, 2), 0, 3)
-	ConfirmReduceInterfaceSeed(f(1, 2), 10, 13)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3), 0, 6)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3), 10, 16)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduceInterfaceSeed(0, 0, 0)
+	ConfirmReduceInterfaceSeed(0, 10, 10)
+	ConfirmReduceInterfaceSeed(1, 0, 0)
+	ConfirmReduceInterfaceSeed(1, 10, 10)
+	ConfirmReduceInterfaceSeed(2, 0, 1)
+	ConfirmReduceInterfaceSeed(2, 10, 11)
+	ConfirmReduceInterfaceSeed(3, 0, 3)
+	ConfirmReduceInterfaceSeed(3, 10, 13)
+	ConfirmReduceInterfaceSeed(4, 0, 6)
+	ConfirmReduceInterfaceSeed(4, 10, 16)
+	ConfirmReduceInterfaceSeed(5, 0, 10)
+	ConfirmReduceInterfaceSeed(5, 10, 20)
 
-	ConfirmReduceValueSeed(f(), 0, 0)
-	ConfirmReduceValueSeed(f(), 10, 10)
-	ConfirmReduceValueSeed(f(0), 0, 0)
-	ConfirmReduceValueSeed(f(0), 10, 10)
-	ConfirmReduceValueSeed(f(1), 0, 1)
-	ConfirmReduceValueSeed(f(1), 10, 11)
-	ConfirmReduceValueSeed(f(1, 2), 0, 3)
-	ConfirmReduceValueSeed(f(1, 2), 10, 13)
-	ConfirmReduceValueSeed(f(1, 2, 3), 0, 6)
-	ConfirmReduceValueSeed(f(1, 2, 3), 10, 16)
-	ConfirmReduceValueSeed(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduceValueSeed(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduceValueSeed(0, 0, 0)
+	ConfirmReduceValueSeed(0, 10, 10)
+	ConfirmReduceValueSeed(1, 0, 0)
+	ConfirmReduceValueSeed(1, 10, 10)
+	ConfirmReduceValueSeed(2, 0, 1)
+	ConfirmReduceValueSeed(2, 10, 11)
+	ConfirmReduceValueSeed(3, 0, 3)
+	ConfirmReduceValueSeed(3, 10, 13)
+	ConfirmReduceValueSeed(4, 0, 6)
+	ConfirmReduceValueSeed(4, 10, 16)
+	ConfirmReduceValueSeed(5, 0, 10)
+	ConfirmReduceValueSeed(5, 10, 20)
 
 	iterators = []interface{}{
 		func(seed, v interface{}) interface{} { return seed.(bool) && v.(bool) },
@@ -1087,29 +1280,39 @@ func TestReduceRValueChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(seed.Bool() && v.Bool()) },
 	}
 
-	ConfirmReduceInterfaceSeed(f(), false, false)
-	ConfirmReduceInterfaceSeed(f(), true, true)
-	ConfirmReduceInterfaceSeed(f(false), false, false)
-	ConfirmReduceInterfaceSeed(f(false), true, false)
-	ConfirmReduceInterfaceSeed(f(true), false, false)
-	ConfirmReduceInterfaceSeed(f(true), true, true)
-	ConfirmReduceInterfaceSeed(f(false, true), true, false)
-	ConfirmReduceInterfaceSeed(f(true, false), true, false)
-	ConfirmReduceInterfaceSeed(f(true, true), true, true)
-	ConfirmReduceInterfaceSeed(f(true, true, true), true, true)
-	ConfirmReduceInterfaceSeed(f(true, true, false, true), true, false)
-	
-	ConfirmReduceValueSeed(f(), false, false)
-	ConfirmReduceValueSeed(f(), true, true)
-	ConfirmReduceValueSeed(f(false), false, false)
-	ConfirmReduceValueSeed(f(false), true, false)
-	ConfirmReduceValueSeed(f(true), false, false)
-	ConfirmReduceValueSeed(f(true), true, true)
-	ConfirmReduceValueSeed(f(false, true), true, false)
-	ConfirmReduceValueSeed(f(true, false), true, false)
-	ConfirmReduceValueSeed(f(true, true), true, true)
-	ConfirmReduceValueSeed(f(true, true, true), true, true)
-	ConfirmReduceValueSeed(f(true, true, false, true), true, false)
+	funcs = []func() chan R.Value {
+		f(),
+		f(false),
+		f(true),
+		f(false, true),
+		f(true, false),
+		f(true, true, true),
+		f(true, true, false, true),
+	}
+
+	ConfirmReduceInterfaceSeed(0, false, false)
+	ConfirmReduceInterfaceSeed(0, true, true)
+	ConfirmReduceInterfaceSeed(1, false, false)
+	ConfirmReduceInterfaceSeed(1, true, false)
+	ConfirmReduceInterfaceSeed(2, false, false)
+	ConfirmReduceInterfaceSeed(2, true, true)
+	ConfirmReduceInterfaceSeed(3, true, false)
+	ConfirmReduceInterfaceSeed(3, true, false)
+	ConfirmReduceInterfaceSeed(4, true, true)
+	ConfirmReduceInterfaceSeed(5, true, true)
+	ConfirmReduceInterfaceSeed(6, true, false)
+
+	ConfirmReduceValueSeed(0, false, false)
+	ConfirmReduceValueSeed(0, true, true)
+	ConfirmReduceValueSeed(1, false, false)
+	ConfirmReduceValueSeed(1, true, false)
+	ConfirmReduceValueSeed(2, false, false)
+	ConfirmReduceValueSeed(2, true, true)
+	ConfirmReduceValueSeed(3, true, false)
+	ConfirmReduceValueSeed(3, true, false)
+	ConfirmReduceValueSeed(4, true, true)
+	ConfirmReduceValueSeed(5, true, true)
+	ConfirmReduceValueSeed(6, true, false)
 }
 
 func TestReduceChannel(t *testing.T) {
@@ -1139,47 +1342,56 @@ func TestReduceChannel(t *testing.T) {
 		func(seed R.Value, index, v R.Value) R.Value { return R.ValueOf(UDT(seed.Int() + v.Int())) },
 	}
 
-	ConfirmReduceInterfaceSeed := func(o func() chan UDT, seed, result UDT) {
-		defer reportReductionError(t, o, seed)
+	funcs := []func() chan UDT {
+		f(),
+		f(0),
+		f(1),
+		f(1, 2),
+		f(1, 2, 3),
+		f(1, 2, 3, 4),
+	}
+
+	ConfirmReduceInterfaceSeed := func(i int, seed, result UDT) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(o(), seed, f); v.(R.Value).Interface() != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v.(R.Value).Interface())
+			if v := Reduce(funcs[i], seed, f); v.(R.Value).Interface() != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v.(R.Value).Interface())
 			}
 		}
 	}
 
-	ConfirmReduceValueSeed := func(o func() chan UDT, seed, result UDT) {
-		defer reportReductionError(t, o, seed)
+	ConfirmReduceValueSeed := func(i int, seed, result UDT) {
+		defer reportReductionError(t, i, seed)
 		for n, f := range iterators {
-			if v := Reduce(R.ValueOf(o()), R.ValueOf(seed), f); v.(R.Value).Interface() != result {
-				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", o, seed, n, result, v.(R.Value).Interface())
+			if v := Reduce(R.ValueOf(funcs[i]), R.ValueOf(seed), f); v.(R.Value).Interface() != result {
+				t.Fatalf("Reduce(%v, %v, iterators[%v]): should have returned %v but instead returned %v", i, seed, n, result, v.(R.Value).Interface())
 			}
 		}
 	}
 
-	ConfirmReduceInterfaceSeed(f(), 0, 0)
-	ConfirmReduceInterfaceSeed(f(), 10, 10)
-	ConfirmReduceInterfaceSeed(f(0), 0, 0)
-	ConfirmReduceInterfaceSeed(f(0), 10, 10)
-	ConfirmReduceInterfaceSeed(f(1), 0, 1)
-	ConfirmReduceInterfaceSeed(f(1), 10, 11)
-	ConfirmReduceInterfaceSeed(f(1, 2), 0, 3)
-	ConfirmReduceInterfaceSeed(f(1, 2), 10, 13)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3), 0, 6)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3), 10, 16)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduceInterfaceSeed(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduceInterfaceSeed(0, 0, 0)
+	ConfirmReduceInterfaceSeed(0, 10, 10)
+	ConfirmReduceInterfaceSeed(1, 0, 0)
+	ConfirmReduceInterfaceSeed(1, 10, 10)
+	ConfirmReduceInterfaceSeed(2, 0, 1)
+	ConfirmReduceInterfaceSeed(2, 10, 11)
+	ConfirmReduceInterfaceSeed(3, 0, 3)
+	ConfirmReduceInterfaceSeed(3, 10, 13)
+	ConfirmReduceInterfaceSeed(4, 0, 6)
+	ConfirmReduceInterfaceSeed(4, 10, 16)
+	ConfirmReduceInterfaceSeed(5, 0, 10)
+	ConfirmReduceInterfaceSeed(5, 10, 20)
 
-	ConfirmReduceValueSeed(f(), 0, 0)
-	ConfirmReduceValueSeed(f(), 10, 10)
-	ConfirmReduceValueSeed(f(0), 0, 0)
-	ConfirmReduceValueSeed(f(0), 10, 10)
-	ConfirmReduceValueSeed(f(1), 0, 1)
-	ConfirmReduceValueSeed(f(1), 10, 11)
-	ConfirmReduceValueSeed(f(1, 2), 0, 3)
-	ConfirmReduceValueSeed(f(1, 2), 10, 13)
-	ConfirmReduceValueSeed(f(1, 2, 3), 0, 6)
-	ConfirmReduceValueSeed(f(1, 2, 3), 10, 16)
-	ConfirmReduceValueSeed(f(1, 2, 3, 4), 0, 10)
-	ConfirmReduceValueSeed(f(1, 2, 3, 4), 10, 20)
+	ConfirmReduceValueSeed(0, 0, 0)
+	ConfirmReduceValueSeed(0, 10, 10)
+	ConfirmReduceValueSeed(1, 0, 0)
+	ConfirmReduceValueSeed(1, 10, 10)
+	ConfirmReduceValueSeed(2, 0, 1)
+	ConfirmReduceValueSeed(2, 10, 11)
+	ConfirmReduceValueSeed(3, 0, 3)
+	ConfirmReduceValueSeed(3, 10, 13)
+	ConfirmReduceValueSeed(4, 0, 6)
+	ConfirmReduceValueSeed(4, 10, 16)
+	ConfirmReduceValueSeed(5, 0, 10)
+	ConfirmReduceValueSeed(5, 10, 20)
 }
