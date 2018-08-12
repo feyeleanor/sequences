@@ -2,13 +2,13 @@ package sequences
 
 import R "reflect"
 
-const(
-	_MAXINT_ = int(^uint(0) >> 1)
-	DEFERRED_COUNT = -1
+const (
+	_MAXINT_           = int(^uint(0) >> 1)
+	DEFERRED_COUNT     = -1
 	INDEX_OUT_OF_RANGE = "runtime error: index out of range"
-	NOT_A_SEQUENCE = "sequences: not a valid sequence"
-	NOT_AN_ITERATOR = "sequences: not a valid iterator"
-	NEGATIVE_SPAN = "sequences: span must be a non-negative number"
+	NOT_A_SEQUENCE     = "sequences: not a valid sequence"
+	NOT_AN_ITERATOR    = "sequences: not a valid iterator"
+	NEGATIVE_SPAN      = "sequences: span must be a non-negative number"
 	UNHANDLED_ITERATOR = "sequences: type cannot handle iterator"
 	ASCENDING_SEQUENCE = "sequences: sequence cannot be iterated in reverse order"
 )
@@ -34,10 +34,10 @@ type Reducible interface {
 	Reduce(enum *Enumerator) interface{}
 }
 
-var(
+var (
 	_MEASURABLE = R.TypeOf(new(Measurable)).Elem()
-	_CONFINED = R.TypeOf(new(Confined)).Elem()
-	_MAPPABLE = R.TypeOf(new(Mappable)).Elem()
+	_CONFINED   = R.TypeOf(new(Confined)).Elem()
+	_MAPPABLE   = R.TypeOf(new(Mappable)).Elem()
 	_ENUMERABLE = R.TypeOf(new(Enumerable)).Elem()
 )
 
@@ -50,7 +50,7 @@ func IgnoreIndexOutOfRange() {
 		if x, ok := x.(error); !ok || x.Error() != INDEX_OUT_OF_RANGE {
 			panic(x)
 		}
-	} 
+	}
 }
 
 /*
@@ -73,21 +73,19 @@ func isFunctionSequence(f R.Value) (b bool) {
 	return
 }
 
-func Each(seq, f interface{}) (count int) {
-	return EachBy(seq, 1, f)
+func Each(seq, f interface{}) {
+	Enumerator{Sequence: seq, Span: 1}.Each(f)
 }
 
-func EachBy(seq interface{}, span int, f interface{}) int {
-	enum := &Enumerator{ Sequence: seq, Span: span }
-	return enum.Each(f)
+func EachBy(seq interface{}, span int, f interface{}) {
+	Enumerator{Sequence: seq, Span: span}.Each(f)
 }
 
-func Cycle(seq interface{}, count int, f interface{}) (i int) {
-	enum := &Enumerator{ Sequence: seq, Span: 1 }
-	for ; i < count; i++ {
+func Cycle(seq interface{}, count int, f interface{}) {
+	enum := Enumerator{Sequence: seq, Span: 1}
+	for i := 0; i < count; i++ {
 		enum.Each(f)
 	}
-	return
 }
 
 func CycleForever(container interface{}, f interface{}) {
@@ -97,13 +95,12 @@ func CycleForever(container interface{}, f interface{}) {
 }
 
 //	f() should be an interface{} with a call to a generic function call handler
-func Count(container interface{}, f func(interface{}) bool) (n, l int) {
+func Count(container interface{}, f func(interface{}) bool) (n int) {
 	return CountBy(container, 1, f)
 }
 
-func CountBy(container interface{}, span int, f func(interface{}) bool) (n, l int) {
-	enum := &Enumerator{ Sequence: container, Span: span }
-	l = enum.Each(func(x interface{}) {
+func CountBy(container interface{}, span int, f func(interface{}) bool) (n int) {
+	Enumerator{Sequence: container, Span: span}.Each(func(x interface{}) {
 		if f(x) {
 			n++
 		}
@@ -125,10 +122,10 @@ func While(container, f interface{}) (count int) {
 		switch c := R.ValueOf(container); c.Kind() {
 		case R.Slice:
 			count = whileSlice(c, true, f)
-//		case R.Chan:
-//			count = whileChannel(c, true, f)
-//		case R.Func:
-//			count = whileFunction(c, true, f)
+			//		case R.Chan:
+			//			count = whileChannel(c, true, f)
+			//		case R.Func:
+			//			count = whileFunction(c, true, f)
 		}
 	}
 	return
@@ -144,10 +141,10 @@ func Until(container, f interface{}) (count int) {
 		switch c := R.ValueOf(container); c.Kind() {
 		case R.Slice:
 			count = whileSlice(c, false, f)
-//		case R.Chan:
-//			count = whileChannel(c, false, f)
-//		case R.Func:
-//			count = whileFunction(c, false, f)
+			//		case R.Chan:
+			//			count = whileChannel(c, false, f)
+			//		case R.Func:
+			//			count = whileFunction(c, false, f)
 		}
 	}
 	return
@@ -158,6 +155,5 @@ func Reduce(seq, seed, f interface{}) interface{} {
 }
 
 func ReduceBy(seq, seed interface{}, span int, f interface{}) interface{} {
-	enum := &Enumerator{ Sequence: seq, Span: span }
-	return enum.Reduce(seed, f)
+	return Enumerator{Sequence: seq, Span: span}.Reduce(seed, f)
 }

@@ -1,8 +1,6 @@
 package sequences
 
-import (
-	R "reflect"
-)
+import R "reflect"
 
 func countFunction(g R.Value, step int, f interface{}) (count int) {
 	if tg := g.Type(); tg.NumOut() == 2 {
@@ -29,7 +27,7 @@ func countFunction(g R.Value, step int, f interface{}) (count int) {
 						count++
 					}
 					i++
-				} 
+				}
 			case func(interface{}, interface{}) bool:
 				for i, v := 0, g.Call(p); !v[1].Bool(); v = g.Call(p) {
 					offset--
@@ -114,8 +112,8 @@ func countFunction(g R.Value, step int, f interface{}) (count int) {
 				}
 			}
 		case 1:
-			var i	int
-			p := []R.Value{ R.ValueOf(0) }
+			var i int
+			p := []R.Value{R.ValueOf(0)}
 			switch f := f.(type) {
 			case func(interface{}):
 				for v := g.Call(p); !v[1].Bool(); v = g.Call(p) {

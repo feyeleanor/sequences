@@ -4,18 +4,17 @@ import "testing"
 
 func TestCycle(t *testing.T) {
 	ConfirmCycle := func(s interface{}, l int) {
-		var c	int
+		var c int
 		defer func() {
 			if e := recover(); e != nil {
 				t.Fatalf("cycle([%T], %v): failed with error %v", s, c, e)
 			}
 		}()
 		for c = 1; c < 5; c++ {
-			iterations := 0
-			expected := c * l
-			switch cycles := Cycle(s, c, func(i interface{}) { iterations++ }); {
-			case cycles != c:				t.Fatalf("cycle([%T], %v): cycle count should be %v but is %v", s, c, c, cycles)
-			case iterations != expected:	t.Fatalf("cycle([%T], %v): iteration count should be %v but is %v", s, c, expected, iterations)
+			i := 0
+			r := c * l
+			if Cycle(s, c, func(interface{}) { i++ }); i != r {
+				t.Fatalf("cycle([%T], %v): iteration count should be %v but is %v", s, c, r, i)
 			}
 		}
 	}

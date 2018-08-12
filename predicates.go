@@ -21,7 +21,7 @@ func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) (count int) {
 }
 
 func None(container interface{}, f func(interface{}) bool) bool {
-	var count	int
+	var count int
 	Until(container, func(x interface{}) bool {
 		if f(x) {
 			count++
@@ -32,7 +32,7 @@ func None(container interface{}, f func(interface{}) bool) bool {
 }
 
 func One(container interface{}, f func(interface{}) bool) bool {
-	var count	int
+	var count int
 	While(container, func(x interface{}) bool {
 		if f(x) {
 			count++
@@ -55,8 +55,10 @@ func All(container interface{}, f func(interface{}) bool) bool {
 	Density determines the proportion of a sequence which matches a given predicate
 */
 func Density(container interface{}, f func(interface{}) bool) (r float64) {
-	n := 0
-	l := Each(container, func(x interface{}) {
+	var l, n int
+
+	Each(container, func(x interface{}) {
+		l++
 		if f(x) {
 			n++
 		}
