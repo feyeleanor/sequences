@@ -5,262 +5,204 @@ import R "reflect"
 type Enumerator struct {
 	Sequence interface{}
 	Span     int
-	cursor   int
-	steps    int
 	f        interface{}
 	seed     interface{}
-	error
 }
 
-func (enum Enumerator) Cursor() int {
-	return enum.cursor
+func NewEnumerator(seq interface{}) *Enumerator {
+	return &Enumerator{Sequence: seq, Span: 1}
 }
 
-func (enum Enumerator) F() interface{} {
-	return enum.f
-}
-
-func (enum Enumerator) Seed() interface{} {
-	return enum.seed
-}
-
-func (enum *Enumerator) Next() (cursor int) {
-	cursor = enum.cursor
-	enum.cursor += enum.Span
-	return
-}
-
-func (enum Enumerator) Each(f interface{}) (count int) {
-	enum.Bind(f)
-	enum.cursor = 0
+func (enum Enumerator) Each(f interface{}) {
+	enum.f = f
 	switch seq := enum.Sequence.(type) {
 	case Enumerable:
-		count = seq.Each(&enum)
+		seq.Each(&enum)
 	case Indexable:
-		count = eachIndexable(&enum, seq)
+		eachIndexable(&enum, seq)
 	case []bool:
-		count = eachBoolSlice(&enum, seq)
+		eachBoolSlice(&enum, seq)
 	case []complex64:
-		count = eachComplex64Slice(&enum, seq)
+		eachComplex64Slice(&enum, seq)
 	case []complex128:
-		count = eachComplex128Slice(&enum, seq)
+		eachComplex128Slice(&enum, seq)
 	case []error:
-		count = eachErrorSlice(&enum, seq)
+		eachErrorSlice(&enum, seq)
 	case []float32:
-		count = eachFloat32Slice(&enum, seq)
+		eachFloat32Slice(&enum, seq)
 	case []float64:
-		count = eachFloat64Slice(&enum, seq)
+		eachFloat64Slice(&enum, seq)
 	case []int:
-		count = eachIntSlice(&enum, seq)
+		eachIntSlice(&enum, seq)
 	case []int8:
-		count = eachInt8Slice(&enum, seq)
+		eachInt8Slice(&enum, seq)
 	case []int16:
-		count = eachInt16Slice(&enum, seq)
+		eachInt16Slice(&enum, seq)
 	case []int32:
-		count = eachInt32Slice(&enum, seq)
+		eachInt32Slice(&enum, seq)
 	case []int64:
-		count = eachInt64Slice(&enum, seq)
+		eachInt64Slice(&enum, seq)
 	case []interface{}:
-		count = eachInterfaceSlice(&enum, seq)
+		eachInterfaceSlice(&enum, seq)
 	case []string:
-		count = eachStringSlice(&enum, seq)
+		eachStringSlice(&enum, seq)
 	case []uint:
-		count = eachUintSlice(&enum, seq)
+		eachUintSlice(&enum, seq)
 	case []uint8:
-		count = eachUint8Slice(&enum, seq)
+		eachUint8Slice(&enum, seq)
 	case []uint16:
-		count = eachUint16Slice(&enum, seq)
+		eachUint16Slice(&enum, seq)
 	case []uint32:
-		count = eachUint32Slice(&enum, seq)
+		eachUint32Slice(&enum, seq)
 	case []uint64:
-		count = eachUint64Slice(&enum, seq)
+		eachUint64Slice(&enum, seq)
 	case []uintptr:
-		count = eachUintptrSlice(&enum, seq)
+		eachUintptrSlice(&enum, seq)
 	case []R.Value:
-		count = eachRValueSlice(&enum, seq)
+		eachRValueSlice(&enum, seq)
 	case chan bool:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachBoolChannel(&enum, seq)
-		}
+		eachBoolChannel(&enum, seq)
 	case chan complex64:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachComplex64Channel(&enum, seq)
-		}
+		eachComplex64Channel(&enum, seq)
 	case chan complex128:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachComplex128Channel(&enum, seq)
-		}
+		eachComplex128Channel(&enum, seq)
 	case chan error:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachErrorChannel(&enum, seq)
-		}
+		eachErrorChannel(&enum, seq)
 	case chan float32:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachFloat32Channel(&enum, seq)
-		}
+		eachFloat32Channel(&enum, seq)
 	case chan float64:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachFloat64Channel(&enum, seq)
-		}
+		eachFloat64Channel(&enum, seq)
 	case chan int:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachIntChannel(&enum, seq)
-		}
+		eachIntChannel(&enum, seq)
 	case chan int8:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachInt8Channel(&enum, seq)
-		}
+		eachInt8Channel(&enum, seq)
 	case chan int16:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachInt16Channel(&enum, seq)
-		}
+		eachInt16Channel(&enum, seq)
 	case chan int32:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachInt32Channel(&enum, seq)
-		}
+		eachInt32Channel(&enum, seq)
 	case chan int64:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachInt64Channel(&enum, seq)
-		}
+		eachInt64Channel(&enum, seq)
 	case chan interface{}:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachInterfaceChannel(&enum, seq)
-		}
+		eachInterfaceChannel(&enum, seq)
 	case chan string:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachStringChannel(&enum, seq)
-		}
+		eachStringChannel(&enum, seq)
 	case chan uint:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUintChannel(&enum, seq)
-		}
+		eachUintChannel(&enum, seq)
 	case chan uint8:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUint8Channel(&enum, seq)
-		}
+		eachUint8Channel(&enum, seq)
 	case chan uint16:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUint16Channel(&enum, seq)
-		}
+		eachUint16Channel(&enum, seq)
 	case chan uint32:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUint32Channel(&enum, seq)
-		}
+		eachUint32Channel(&enum, seq)
 	case chan uint64:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUint64Channel(&enum, seq)
-		}
+		eachUint64Channel(&enum, seq)
 	case chan uintptr:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachUintptrChannel(&enum, seq)
-		}
+		eachUintptrChannel(&enum, seq)
 	case chan R.Value:
-		if enum.Span < 1 {
-			panic(ASCENDING_SEQUENCE)
-		} else {
-			count = eachRValueChannel(&enum, seq)
-		}
+		eachRValueChannel(&enum, seq)
+	case func(int) bool:
+		enum.eachboolFunction(seq)
+	case func(int) complex64:
+		enum.eachcomplex64Function(seq)
+	case func(int) complex128:
+		enum.eachcomplex128Function(seq)
+	case func(int) error:
+		enum.eacherrorFunction(seq)
+	case func(int) float32:
+		enum.eachfloat32Function(seq)
+	case func(int) float64:
+		enum.eachfloat64Function(seq)
+	case func(int) int:
+		enum.eachintFunction(seq)
+	case func(int) int8:
+		enum.eachint8Function(seq)
+	case func(int) int16:
+		enum.eachint16Function(seq)
+	case func(int) int32:
+		enum.eachint32Function(seq)
+	case func(int) int64:
+		enum.eachint64Function(seq)
+	case func(int) interface{}:
+		enum.eachinterfaceFunction(seq)
+	case func(int) string:
+		enum.eachstringFunction(seq)
+	case func(int) uint:
+		enum.eachuintFunction(seq)
+	case func(int) uint8:
+		enum.eachuint8Function(seq)
+	case func(int) uint16:
+		enum.eachuint16Function(seq)
+	case func(int) uint32:
+		enum.eachuint32Function(seq)
+	case func(int) uint64:
+		enum.eachuint64Function(seq)
+	case func(int) uintptr:
+		enum.eachuintptrFunction(seq)
+	case func(int) R.Value:
+		enum.eachRValueFunction(seq)
 	case R.Value:
 		switch seq.Kind() {
 		case R.Slice:
-			count = eachSlice(&enum, seq)
+			eachSlice(&enum, seq)
 		case R.Chan:
 			if enum.Span < 1 {
 				panic(ASCENDING_SEQUENCE)
 			} else {
-				count = eachChannel(&enum, seq)
+				eachChannel(&enum, seq)
 			}
 		case R.Func:
 			if isFunctionSequence(seq) {
-				count = eachFunction(&enum, seq)
+				eachFunction(&enum, seq)
 			} else {
 				panic(NOT_A_SEQUENCE)
 			}
 		default:
 			switch c := R.ValueOf(seq); c.Kind() {
 			case R.Slice:
-				count = eachSlice(&enum, c)
+				eachSlice(&enum, c)
 			case R.Chan:
 				if enum.Span < 1 {
 					panic(ASCENDING_SEQUENCE)
 				} else {
-					count = eachChannel(&enum, c)
+					eachChannel(&enum, c)
 				}
 			case R.Func:
 				if isFunctionSequence(seq) {
-					count = eachFunction(&enum, c)
+					eachFunction(&enum, c)
 				} else {
 					panic(NOT_A_SEQUENCE)
 				}
 			}
 		}
+	default:
+		enum.Each(R.ValueOf(enum.Sequence))
 	}
 	return
 }
 
-func (enum Enumerator) each(f interface{}) (count int) {
+func (enum Enumerator) each(f interface{}) {
 	defer IgnoreIndexOutOfRange()
-	enum.cursor = 0
+	var cursor int
+
 	switch f := f.(type) {
 	case func(int):
 		for {
-			f(enum.Next())
-			count++
+			f(cursor)
+			cursor++
 		}
 	case func(int) bool:
 		for {
-			if f(enum.Next()) {
-				count++
-			}
+			f(cursor)
+			cursor++
 		}
 	default:
 		panic(f)
 	}
-	return
 }
 
 func (enum Enumerator) Reduce(seed, f interface{}) (r interface{}) {
-	enum.Bind(f)
+	enum.f = f
 	enum.seed = seed
-	enum.cursor = 0
 	switch seq := enum.Sequence.(type) {
 	case Reducible:
 		r = seq.Reduce(&enum)
@@ -498,9 +440,10 @@ func (enum Enumerator) Reduce(seed, f interface{}) (r interface{}) {
 
 func (enum Enumerator) reduce(f func(int)) {
 	defer IgnoreIndexOutOfRange()
-	enum.cursor = 0
+	var cursor int
 	for {
-		f(enum.Next())
+		f(cursor)
+		cursor++
 	}
 	return
 }
@@ -509,33 +452,9 @@ func (enum Enumerator) Copy() (r Enumerator) {
 	r = Enumerator{
 		Sequence: enum.Sequence,
 		Span:     enum.Span,
-		cursor:   enum.cursor,
 		f:        enum.f,
-		error:    enum.error,
 	}
 	return
-}
-
-/*
-	Bind sets the iterator target for an enumerator. This may comprise a function,
-	a channel, or a slice whose element type is a function or channel.
-
-	TODO: implement a more generic binding to allow a richer set of iteration targets
-*/
-func (enum *Enumerator) Bind(f interface{}) {
-	switch fv := R.ValueOf(f); fv.Kind() {
-	case R.Func, R.Chan:
-		enum.f = f
-	case R.Slice:
-		switch fv.Type().Elem().Kind() {
-		case R.Func, R.Chan:
-			enum.f = f
-		default:
-			panic(NOT_AN_ITERATOR)
-		}
-	default:
-		panic(NOT_AN_ITERATOR)
-	}
 }
 
 func skipToChannelOffset(c R.Value, offset int) int {
@@ -549,31 +468,31 @@ func eachIndexable(enum *Enumerator, seq Indexable) (i int) {
 	if l := Len(seq); l > 0 {
 		switch f := enum.f.(type) {
 		case func(interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(seq.AtOffset(cursor))
 			})
 		case func(int, interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(cursor, seq.AtOffset(cursor))
 			})
 		case func(interface{}, interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(cursor, seq.AtOffset(cursor))
 			})
 		case func(R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(R.ValueOf(seq.AtOffset(cursor)))
 			})
 		case func(int, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(cursor, R.ValueOf(seq.AtOffset(cursor)))
 			})
 		case func(interface{}, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(cursor, R.ValueOf(seq.AtOffset(cursor)))
 			})
 		case func(R.Value, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				f(R.ValueOf(cursor), R.ValueOf(seq.AtOffset(cursor)))
 			})
 		default:
@@ -583,13 +502,13 @@ func eachIndexable(enum *Enumerator, seq Indexable) (i int) {
 					switch t.NumIn() {
 					case 1: //	f(v)
 						p := make([]R.Value, 1, 1)
-						i = enum.each(func(cursor int) {
+						enum.each(func(cursor int) {
 							p[0] = R.ValueOf(seq.AtOffset(cursor))
 							f.Call(p)
 						})
 					case 2: //	f(i, v)
 						p := make([]R.Value, 2, 2)
-						i = enum.each(func(cursor int) {
+						enum.each(func(cursor int) {
 							p[0], p[1] = R.ValueOf(cursor), R.ValueOf(seq.AtOffset(cursor))
 							f.Call(p)
 						})
@@ -598,13 +517,13 @@ func eachIndexable(enum *Enumerator, seq Indexable) (i int) {
 					}
 				}
 			case R.Chan:
-				i = enum.each(func(cursor int) {
+				enum.each(func(cursor int) {
 					f.Send(R.ValueOf(seq.AtOffset(cursor)))
 				})
 			case R.Slice:
 				if f.Type().Elem().Kind() == R.Chan {
 					n := f.Len()
-					i = enum.each(func(cursor int) {
+					enum.each(func(cursor int) {
 						v := R.ValueOf(seq.AtOffset(cursor))
 						for i := 0; i < n; i++ {
 							f.Index(i).Send(v)
@@ -637,37 +556,37 @@ func eachFunction(enum *Enumerator, g R.Value) (i int) {
 		p := make([]R.Value, 1, 1)
 		switch f := enum.f.(type) {
 		case func(interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(g.Call(p)[0].Interface())
 			})
 		case func(int, interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(cursor, g.Call(p)[0].Interface())
 			})
 		case func(interface{}, interface{}):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(cursor, g.Call(p)[0].Interface())
 			})
 		case func(R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(g.Call(p)[0])
 			})
 		case func(int, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(cursor, g.Call(p)[0])
 			})
 		case func(interface{}, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(cursor, g.Call(p)[0])
 			})
 		case func(R.Value, R.Value):
-			i = enum.each(func(cursor int) {
+			enum.each(func(cursor int) {
 				p[0] = R.ValueOf(cursor)
 				f(R.ValueOf(cursor), g.Call(p)[0])
 			})
@@ -677,14 +596,14 @@ func eachFunction(enum *Enumerator, g R.Value) (i int) {
 					switch tf.NumIn() {
 					case 1: //	f(v)
 						pf := make([]R.Value, 1, 1)
-						i = enum.each(func(cursor int) {
+						enum.each(func(cursor int) {
 							p[0] = R.ValueOf(cursor)
 							pf[0] = g.Call(p)[0]
 							f.Call(pf)
 						})
 					case 2: //	f(i, v)
 						pf := make([]R.Value, 2, 2)
-						i = enum.each(func(cursor int) {
+						enum.each(func(cursor int) {
 							p[0] = R.ValueOf(cursor)
 							pf[0], pf[1] = p[0], g.Call(p)[0]
 							f.Call(pf)

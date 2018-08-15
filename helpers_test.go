@@ -14,13 +14,11 @@ func isPositive(i interface{}) bool {
 	return false
 }
 
-
 type Error int
 
 func (e Error) Error() string {
 	return fmt.Sprintf("Error Code: %v\n", e)
 }
-
 
 type enumerable_slice []interface{}
 
@@ -29,48 +27,48 @@ func (s enumerable_slice) Len() int {
 }
 
 func (s enumerable_slice) Each(enum *Enumerator) (i int) {
-	switch f := enum.F().(type) {
+	switch f := enum.f().(type) {
 	case func(interface{}):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(s[cursor])
 		})
 	case func(int, interface{}):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(cursor, s[cursor])
 		})
 	case func(interface{}, interface{}):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(cursor, s[cursor])
 		})
 	case func(R.Value):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(R.ValueOf(s[cursor]))
 		})
 	case func(int, R.Value):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(cursor, R.ValueOf(s[cursor]))
 		})
 	case func(interface{}, R.Value):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(cursor, R.ValueOf(s[cursor]))
 		})
 	case func(R.Value, R.Value):
-		i = enum.each(func(cursor int) {
+		enum.each(func(cursor int) {
 			f(R.ValueOf(cursor), R.ValueOf(s[cursor]))
 		})
 	}
 	return
 }
 
-
 type partially_enumerable_slice []interface{}
+
 func (s partially_enumerable_slice) While(r bool, f interface{}) (count int) {
 	if len(s) > 0 {
 		switch f := f.(type) {
 		case func(interface{}) bool:
 			for _, v := range s {
 				if f(v) != r {
-					break 
+					break
 				}
 				count++
 			}
@@ -93,7 +91,6 @@ func (s partially_enumerable_slice) While(r bool, f interface{}) (count int) {
 	return
 }
 
-
 type indexable_slice []interface{}
 
 func (i indexable_slice) Len() int {
@@ -103,7 +100,6 @@ func (i indexable_slice) Len() int {
 func (i indexable_slice) AtOffset(x int) interface{} {
 	return i[x]
 }
-
 
 type indexable_function func(i int) interface{}
 
@@ -117,7 +113,6 @@ func (f indexable_function) AtOffset(x int) interface{} {
 	}
 	return f(x)
 }
-
 
 type mappable_slice []int
 
@@ -137,7 +132,6 @@ func (m mappable_slice) Keys() interface{} {
 	}
 	return r
 }
-
 
 type mappable_map map[int]int
 
@@ -159,7 +153,6 @@ func (m mappable_map) Keys() interface{} {
 	return r
 }
 
-
 type mappable_string_map map[string]int
 
 func (m mappable_string_map) Len() int {
@@ -179,7 +172,6 @@ func (m mappable_string_map) Keys() interface{} {
 	}
 	return r
 }
-
 
 type mappable_function func(i int) interface{}
 

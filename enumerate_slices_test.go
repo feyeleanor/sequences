@@ -36,6 +36,7 @@ func ConfirmSliceEachBy(t *testing.T, s interface{}, span int, f interface{}) {
 }
 
 func TestEnumerateSlice(t *testing.T) {
+	t.Fatalf("Fix Tests")
 	ConfirmEach := func(s interface{}, span int) {
 		count := 0
 		ConfirmSliceEachBy(t, s, span, func(v interface{}) {

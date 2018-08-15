@@ -9,12 +9,12 @@ func TestCountSlice(t *testing.T) {
 		i := 0
 		defer func() {
 			if e := recover(); e != nil {
-				t.Fatalf("Count(%v, %v) failed with error %v", o, i, e)
+				t.Fatalf("Count(%v, conditions[%v]) failed with error %v", o, i, e)
 			}
 		}()
 		for _, c := range conditions {
 			if x := Count(o, c); x != r[i] {
-				t.Fatalf("Count(%v, f) should be %v but is %v", o, r, x)
+				t.Fatalf("Count(%v, %v) should be %v but is %v", o, interface{}(c), r[i], x)
 			}
 			i++
 		}
@@ -40,45 +40,37 @@ func TestCountSlice(t *testing.T) {
 }
 
 func TestCountFunction(t *testing.T) {
-	//	t.Fatalf("Write tests")
+	t.Fatalf("Fix Tests")
 	conditions := []func(interface{}) bool{GreaterThanZero, EqualZero, LessThanZero}
-	//	limit := 10
-	value := 0
+	limit := 10
 
-	ConfirmEach := func(o interface{}, r ...int) {
+	ConfirmCount := func(o interface{}, r ...int) {
 		i := 0
-		value = 0
 		defer func() {
 			if e := recover(); e != nil {
-				t.Fatalf("Count(%v, %v) failed with error %v", o, i, e)
+				t.Fatalf("Count(%v, conditions[%v]) failed with error %v", o, i, e)
 			}
 		}()
 		for _, c := range conditions {
 			if x := Count(o, c); x != r[i] {
-				t.Fatalf("Count(%v, f) should be %v but is %v", o, r, x)
+				t.Fatalf("Count(%v, %v) should be %v but is %v", o, interface{}(c), r[i], x)
 			}
 			i++
 		}
-
-		//		switch count, l := Count(F, f.(func(interface{}) bool)); {
-		//		case l == 0:
-		//			t.Fatalf("failed to perform iteration %v over %v", f, F)
-		//		case value != limit:
-		//			t.Fatalf("total items produced should be %v but are %v", limit, value)
-		//			//		case count != limit:
-		//			//			//t.Fatalf("total iterations should be %v but are %v", limit, count)
-		//			//			panic(count)
-		//		}
 	}
 
-	ConfirmEach(func(v interface{}) (i int, ok bool) {
+	ConfirmCount(func(i int) (v int, ok bool) {
 		return 0, false
 	}, 0, 0, 0)
 
+	ConfirmCount(func(i int) (v int, ok bool) {
+		return i, i < limit
+	}, limit-1, 1, 0)
+
 	/*	ConfirmEachFunction := func(F interface{}) {
-			ConfirmEach(F, func(v interface{}) bool {})
+			ConfirmCount(F, func(v interface{}) bool {})
 
-			ConfirmEach(F, func(i int, v interface{}) {
+			ConfirmCount(F, func(i int, v interface{}) {
 				switch {
 				case i != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i)
@@ -88,7 +80,7 @@ func TestCountFunction(t *testing.T) {
 				count++
 			})
 
-			ConfirmEach(F, func(i, v interface{}) {
+			ConfirmCount(F, func(i, v interface{}) {
 				switch {
 				case i != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i)
@@ -98,14 +90,14 @@ func TestCountFunction(t *testing.T) {
 				count++
 			})
 
-			ConfirmEach(F, func(v R.Value) {
+			ConfirmCount(F, func(v R.Value) {
 				if v.Interface() != count {
 					t.Fatalf("value %v erroneously reported as %v", count, v.Interface())
 				}
 				count++
 			})
 
-			ConfirmEach(F, func(i int, v R.Value) {
+			ConfirmCount(F, func(i int, v R.Value) {
 				switch {
 				case i != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i)
@@ -115,7 +107,7 @@ func TestCountFunction(t *testing.T) {
 				count++
 			})
 
-			ConfirmEach(F, func(i interface{}, v R.Value) {
+			ConfirmCount(F, func(i interface{}, v R.Value) {
 				switch {
 				case i != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i)
@@ -125,7 +117,7 @@ func TestCountFunction(t *testing.T) {
 				count++
 			})
 
-			ConfirmEach(F, func(i, v R.Value) {
+			ConfirmCount(F, func(i, v R.Value) {
 				switch {
 				case i.Interface() != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i.Interface())
@@ -138,14 +130,14 @@ func TestCountFunction(t *testing.T) {
 
 		ConfirmEachIntFunction := func(F interface{}) {
 			ConfirmEachFunction(F)
-			ConfirmEach(F, func(v int) {
+			ConfirmCount(F, func(v int) {
 				if v != count {
 					t.Fatalf("value %v erroneously reported as %v", count, v)
 				}
 				count++
 			})
 
-			ConfirmEach(F, func(i, v int) {
+			ConfirmCount(F, func(i, v int) {
 				switch {
 				case i != count:
 					t.Fatalf("index %v erroneously reported as %v", count, i)

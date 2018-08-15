@@ -77,7 +77,7 @@ func TestNone(t *testing.T) {
 			t.Fatalf("None(%v, f) iteration failed with error %v", o, e)
 		}
 	}
-	
+
 	ConfirmNone := func(o interface{}, f func(i interface{}) bool) {
 		defer reportIterationError(o)
 		if !None(o, f) {
@@ -156,6 +156,7 @@ func TestOne(t *testing.T) {
 }
 
 func TestDensity(t *testing.T) {
+	t.Fatalf("Fix Tests")
 	IsPositive := func(i interface{}) bool {
 		if i, ok := i.(int); ok {
 			return i > 0
@@ -171,7 +172,7 @@ func TestDensity(t *testing.T) {
 		}()
 
 		tol := 0.0001
-		if d := Density(o, IsPositive); d - r > tol && r - d < tol {
+		if d := Density(o, IsPositive); d-r > tol && r-d < tol {
 			t.Fatalf("Density(%v, f) should be true but is false", o)
 		}
 	}
@@ -203,6 +204,7 @@ func TestDensity(t *testing.T) {
 }
 
 func TestIsDense(t *testing.T) {
+	t.Fatalf("Fix Tests")
 	IsPositive := func(i interface{}) bool {
 		if i, ok := i.(int); ok {
 			return i > 0
@@ -266,6 +268,7 @@ func TestIsDense(t *testing.T) {
 }
 
 func TestIsSparse(t *testing.T) {
+	t.Fatalf("Fix Tests")
 	IsPositive := func(i interface{}) bool {
 		if i, ok := i.(int); ok {
 			return i > 0

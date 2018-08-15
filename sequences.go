@@ -17,29 +17,32 @@ type Measurable interface {
 	Len() int
 }
 
+var _MEASURABLE = R.TypeOf(new(Measurable)).Elem()
+
 type Confined interface {
 	Cap() int
 }
+
+var _CONFINED = R.TypeOf(new(Confined)).Elem()
 
 type Mappable interface {
 	StoredAs(key interface{}) interface{}
 	Keys() interface{}
 }
 
+var _MAPPABLE = R.TypeOf(new(Mappable)).Elem()
+
 type Enumerable interface {
 	Each(enum *Enumerator) (count int)
 }
+
+var _ENUMERABLE = R.TypeOf(new(Enumerable)).Elem()
 
 type Reducible interface {
 	Reduce(enum *Enumerator) interface{}
 }
 
-var (
-	_MEASURABLE = R.TypeOf(new(Measurable)).Elem()
-	_CONFINED   = R.TypeOf(new(Confined)).Elem()
-	_MAPPABLE   = R.TypeOf(new(Mappable)).Elem()
-	_ENUMERABLE = R.TypeOf(new(Enumerable)).Elem()
-)
+var _REDUCIBLE = R.TypeOf(new(Reducible)).Elem()
 
 func PanicWithIndex(x int) {
 	_ = []int{}[x]

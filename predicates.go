@@ -1,23 +1,21 @@
 package sequences
 
-func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) (count int) {
-	count = enum.each(func(cursor int) (ok bool) {
+func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) {
+	enum.each(func(cursor int) (ok bool) {
 		if ok = cond(cursor); ok {
 			f(cursor)
 		}
 		return
 	})
-	return
 }
 
-func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) (count int) {
-	count = enum.each(func(cursor int) (ok bool) {
+func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) {
+	enum.each(func(cursor int) (ok bool) {
 		if ok = !cond(cursor); ok {
 			f(cursor)
 		}
 		return
 	})
-	return
 }
 
 func None(container interface{}, f func(interface{}) bool) bool {
