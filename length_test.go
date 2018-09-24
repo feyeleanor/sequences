@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestIsFunctionSequence(t *testing.T) {
+	Valid := func(f interface{}) bool {
+		return isFunctionSequence(R.ValueOf(f))
+	}
+
+	Invalid := func(f interface{}) bool {
+		return !isFunctionSequence(R.ValueOf(f))
+	}
+
+	if Valid(17) {
+		t.Fatalf("17 should not be a valid function sequence")
+	}
+
+	if Invalid(func(i int) int { return i }) {
+		t.Fatalf("func(int) int{} should be a valid function sequence")
+	}
+}
+
 func TestLen(t *testing.T) {
 	ConfirmLen := func(o interface{}, r int) {
 		if l := Len(o); l != r {
@@ -18,7 +36,6 @@ func TestLen(t *testing.T) {
 	ConfirmLen([]int{0, 1, 2}, 3)
 	ConfirmLen(R.ValueOf(0), 1)
 	ConfirmLen(R.ValueOf(([]int)(nil)), 0)
-	ConfirmLen(mappable_slice{0, 1, 2, 3, 4}, 5)
 	ConfirmLen(map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4}, 5)
 }
 
@@ -36,6 +53,5 @@ func TestCap(t *testing.T) {
 	ConfirmCap([]int{0, 1, 2}, 3)
 	ConfirmCap(R.ValueOf(0), 1)
 	ConfirmCap(R.ValueOf(([]int)(nil)), 0)
-	ConfirmCap(mappable_slice{0, 1, 2, 3, 4}, 5)
 	ConfirmCap(map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4}, 0)
 }

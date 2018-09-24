@@ -1,56 +1,60 @@
 package sequences
 
-import (
-	"errors"
-	R "reflect"
-)
+import "R" reflect
 
-type Enumerable interface {
-	Each(f interface{}) error
+type Collectable interface {
+	Collect(interface{}) (interface{}, error)
 }
 
-var _ENUMERABLE = R.TypeOf(new(Enumerable)).Elem()
-
-func Each(seq, f interface{}) (e error) {
+func Collect(seq, f interface{}) (r interface{}, e error) {
 	switch seq := seq.(type) {
+	case Collectable:
+		r, e = seq.Collect(f)
+
 	case Enumerable:
-		e = seq.Each(f)
+		panic()
+		//	TODO: enumerable doesn't currently provide sufficient information to perform a collection using the provided function f
+		//	TODO: think of how enumerable might be changed to remedy this
+		//
+		//	TODO: a simple copy takes the form
+		//
+		//		r = make([]interface{}, 0)
+		//		seq.Each(func(v interface{} {
+		//			r = append(r, v)
+		//		})
+		//
+		//	TODO: the problem is how to get something like
+		//
+		//		r = make([]interface{}, 0)
+		//		seq.Each(func(v interface{} {
+		//			r = append(r, f(v))
+		//		})
+		//
+		//	TODO: where f is the function passed to Collect as an interface{} value
+		//	TODO: perhaps the case for Indexable might hold some clues?
 
 	case Indexable:
 		switch f := f.(type) {
 		case func(interface{}):
-			e = eachRawIndex(func(i int) {
-				f(seq.AtOffset(i))
-			}, seq.Len())
-		case func(int, interface{}):
-			e = eachRawIndex(func(i int) {
-				f(i, seq.AtOffset(i))
-			}, seq.Len())
-		case chan interface{}:
-			e = eachRawIndex(func(i int) {
-				f <- seq.AtOffset(i)
-			}, seq.Len())
-		case []chan interface{}:
-			e = eachRawIndex(func(i int) {
-				writeInterfaceChannels(f, seq.AtOffset(i))
-			}, seq.Len())
-
+			r = make([]interface{}, 0, seq.Len())
+			e = Each(seq, func(v interface{}) {
+				r = append(r, f(v))
+			})
 		case func(R.Value):
-			e = eachRawIndex(func(i int) {
-				f(R.ValueOf(seq.AtOffset(i)))
-			}, seq.Len())
+			r = make([]interface{}, 0, seq.Len())
+			e = Each(seq, func(v R.Value) {
+				r = append(r, f(v))
+			})
+		case func(int, interface{}):
+			r = make([]interface{}, 0, seq.Len())
+			e = Each(seq, func(i int, v interface{}) {
+				r = append(r, f(i, v))
+			})
 		case func(int, R.Value):
-			e = eachRawIndex(func(i int) {
-				f(i, R.ValueOf(seq.AtOffset(i)))
-			}, seq.Len())
-		case chan R.Value:
-			e = eachRawIndex(func(i int) {
-				f <- R.ValueOf(seq.AtOffset(i))
-			}, seq.Len())
-		case []chan R.Value:
-			e = eachRawIndex(func(i int) {
-				writeRValueChannels(f, R.ValueOf(seq.AtOffset(i)))
-			}, seq.Len())
+			r = make([]interface{}, 0, seq.Len())
+			e = Each(seq, func(i int, v R.Value) {
+				r = append(r, f(i, v))
+			})
 		default:
 			e = NOT_AN_ENUMERATOR
 		}

@@ -198,7 +198,7 @@ func TestEachIndexable(t *testing.T) {
 			t.Fatalf("iteration failed with error %v", e)
 		}
 	}()
-	
+
 	ConfirmEachIndexable := func(S Indexable) {
 		Each(S, func(i interface{}) {})
 		Each(S, func(i int, v interface{}) {})
@@ -211,33 +211,6 @@ func TestEachIndexable(t *testing.T) {
 
 	ConfirmEachIndexable(indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
 	ConfirmEachIndexable(indexable_function(func(i int) interface{} { return i }))
-}
-
-func TestEachMappable(t *testing.T) {
-	t.Fatalf("Implement support for Mappables")
-	defer func() {
-		if e := recover(); e != nil {
-			t.Fatalf("iteration failed with error %v", e)
-		}
-	}()
-
-	ConfirmEachMappable := func(M Mappable) {
-		Each(M, func(i interface{}) {})
-		Each(M, func(i int, v interface{}) {})
-		Each(M, func(k, v interface{}) {})
-		Each(M, func(i R.Value) {})
-		Each(M, func(i int, v R.Value) {})
-		Each(M, func(k interface{}, v R.Value) {})
-		Each(M, func(k, v R.Value) {})
-	}
-
-	ConfirmEachMappable(mappable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
-	ConfirmEachMappable(mappable_function(func(i int) interface{} { return i }))
-	ConfirmEachMappable(mappable_map{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9})
-
-	m := mappable_string_map{"0": 0, "1": 1, "2": 2, "3": 3}
-	Each(m, func(k string, v interface{}) {})
-	Each(m, func(k string, v R.Value) {})
 }
 
 func TestEachSlice(t *testing.T) {
@@ -259,30 +232,6 @@ func TestEachSlice(t *testing.T) {
 		Each(s, func(i, v int) {})
 	}
 	ConfirmEachSlice([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
-}
-
-func TestEachMap(t *testing.T) {
-	t.Fatalf("Implement support for Maps")
-	defer func() {
-		if e := recover(); e != nil {
-			t.Fatalf("iteration failed with error %v", e)
-		}
-	}()
-
-	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	Each(M, func(v interface{}) {})
-	Each(M, func(i int, v interface{}) {})
-	Each(M, func(k, v interface{}) {})
-	Each(M, func(v R.Value) {})
-	Each(M, func(i int, v R.Value) {})
-	Each(M, func(k interface{}, v R.Value) {})
-	Each(M, func(k, v R.Value) {})
-	Each(M, func(v int) {})
-	Each(M, func(i, v int) {})
-
-	MS := map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
-	Each(MS, func(k string, v interface{}) {})
-	Each(MS, func(k string, v R.Value) {})
 }
 
 func TestEachChannel(t *testing.T) {

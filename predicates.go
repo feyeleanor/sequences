@@ -1,26 +1,8 @@
 package sequences
 
-func (enum Enumerator) ifTrue(cond func(int) bool, f func(int)) {
-	enum.each(func(cursor int) (ok bool) {
-		if ok = cond(cursor); ok {
-			f(cursor)
-		}
-		return
-	})
-}
-
-func (enum Enumerator) ifFalse(cond func(int) bool, f func(int)) {
-	enum.each(func(cursor int) (ok bool) {
-		if ok = !cond(cursor); ok {
-			f(cursor)
-		}
-		return
-	})
-}
-
-func None(container interface{}, f func(interface{}) bool) bool {
+func None(seq interface{}, f func(interface{}) bool) bool {
 	var count int
-	Until(container, func(x interface{}) bool {
+	UntilTrue(seq, func(x interface{}) bool {
 		if f(x) {
 			count++
 		}
@@ -29,9 +11,9 @@ func None(container interface{}, f func(interface{}) bool) bool {
 	return count == 0
 }
 
-func One(container interface{}, f func(interface{}) bool) bool {
+func One(seq interface{}, f func(interface{}) bool) bool {
 	var count int
-	While(container, func(x interface{}) bool {
+	WhileTrue(seq, func(x interface{}) bool {
 		if f(x) {
 			count++
 		}
@@ -40,22 +22,22 @@ func One(container interface{}, f func(interface{}) bool) bool {
 	return count == 1
 }
 
-func Any(container interface{}, f func(interface{}) bool) bool {
-	return Until(container, f) > 0
+func Any(seq interface{}, f func(interface{}) bool) bool {
+	return UntilTrue(seq, f) > 0
 }
 
-func All(container interface{}, f func(interface{}) bool) bool {
-	l := Len(container)
-	return l > 0 && l == While(container, f)
+func All(seq interface{}, f func(interface{}) bool) bool {
+	l := Len(seq)
+	return l > 0 && l == WhileTrue(seq, f)
 }
 
 /*
 	Density determines the proportion of a sequence which matches a given predicate
 */
-func Density(container interface{}, f func(interface{}) bool) (r float64) {
+func Density(seq interface{}, f func(interface{}) bool) (r float64) {
 	var l, n int
 
-	Each(container, func(x interface{}) {
+	Each(seq, func(x interface{}) {
 		l++
 		if f(x) {
 			n++
@@ -67,10 +49,10 @@ func Density(container interface{}, f func(interface{}) bool) (r float64) {
 	return
 }
 
-func IsDense(container interface{}, threshold float64, f func(interface{}) bool) bool {
-	return Density(container, f) > threshold
+func IsDense(seq interface{}, threshold float64, f func(interface{}) bool) bool {
+	return Density(seq, f) > threshold
 }
 
-func IsSparse(container interface{}, threshold float64, f func(interface{}) bool) bool {
-	return Density(container, f) <= threshold
+func IsSparse(seq interface{}, threshold float64, f func(interface{}) bool) bool {
+	return Density(seq, f) <= threshold
 }
